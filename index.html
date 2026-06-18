@@ -1,0 +1,657 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kuzhal · Learn the Bamboo Flute</title>
+<meta name="description" content="A calm place to learn the bamboo flute — Carnatic and Hindustani. Basics, the physics of sound, notation and fingering, scales, ragas, songs, and a live tuner that transcribes what you play.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#16110d;            /* aged-bamboo charcoal */
+    --bg-2:#1d1813;
+    --panel:#221c16;
+    --panel-2:#2a231b;
+    --line:#3a2f24;
+    --line-soft:#2f261d;
+    --ink:#f3e9da;           /* warm cream */
+    --ink-dim:#c9bba6;
+    --ink-mute:#8f8169;
+    --amber:#e3a948;         /* brass / bamboo */
+    --amber-deep:#b9842f;
+    --jade:#5cc7a6;          /* sound / breath */
+    --jade-deep:#39a988;
+    --rose:#d97a66;          /* raga / emphasis */
+    --rad:14px;
+    --rad-sm:9px;
+    --maxw:1180px;
+    --shadow:0 18px 50px -28px rgba(0,0,0,.85);
+    --display:'Fraunces',Georgia,'Times New Roman',serif;
+    --body:'Plus Jakarta Sans',system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
+    --mono:'IBM Plex Mono',ui-monospace,SFMono-Regular,Menlo,monospace;
+  }
+
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    margin:0;background:
+      radial-gradient(1100px 600px at 78% -8%, rgba(227,169,72,.07), transparent 60%),
+      radial-gradient(900px 700px at -8% 110%, rgba(92,199,166,.06), transparent 55%),
+      var(--bg);
+    color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.62;
+    -webkit-font-smoothing:antialiased;
+  }
+  a{color:inherit}
+  h1,h2,h3,h4{font-family:var(--display);font-weight:600;line-height:1.12;margin:0;letter-spacing:-.01em}
+  p{margin:0 0 1rem}
+  ::selection{background:rgba(227,169,72,.32)}
+
+  /* ---------- Layout shell ---------- */
+  .shell{display:grid;grid-template-columns:264px 1fr;min-height:100vh}
+  .side{
+    position:sticky;top:0;height:100vh;border-right:1px solid var(--line);
+    background:linear-gradient(180deg,var(--bg-2),var(--bg));
+    display:flex;flex-direction:column;padding:26px 18px;gap:6px;overflow:auto;
+  }
+  .brand{display:flex;align-items:center;gap:12px;padding:2px 8px 20px;text-decoration:none}
+  .brand .mark{width:38px;height:38px;flex:0 0 auto}
+  .brand b{font-family:var(--display);font-size:1.3rem;font-weight:600;letter-spacing:-.02em;line-height:1}
+  .brand small{display:block;font-size:.66rem;letter-spacing:.22em;text-transform:uppercase;color:var(--ink-mute);font-family:var(--body);margin-top:3px}
+  .nav{display:flex;flex-direction:column;gap:2px;margin-top:4px}
+  .nav a{
+    display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:var(--rad-sm);
+    text-decoration:none;color:var(--ink-dim);font-weight:500;font-size:.94rem;
+    border:1px solid transparent;transition:background .16s,color .16s,border-color .16s;
+  }
+  .nav a .ico{width:18px;height:18px;flex:0 0 auto;opacity:.85}
+  .nav a:hover{background:var(--panel);color:var(--ink)}
+  .nav a.active{background:linear-gradient(180deg,var(--panel-2),var(--panel));color:var(--ink);border-color:var(--line)}
+  .nav a.active .ico{opacity:1}
+  .side-foot{margin-top:auto;padding:16px 10px 2px;color:var(--ink-mute);font-size:.74rem;line-height:1.5}
+
+  .main{min-width:0}
+  .topbar{display:none}
+  .scrim{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:39;display:none}
+  .scrim.show{display:block}
+  .wrap{max-width:var(--maxw);margin:0 auto;padding:54px clamp(20px,4vw,56px) 96px}
+
+  .view{display:none;animation:rise .4s ease both}
+  .view.active{display:block}
+  @keyframes rise{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+
+  /* ---------- Type & bits ---------- */
+  .eyebrow{font-family:var(--mono);font-size:.72rem;letter-spacing:.26em;text-transform:uppercase;color:var(--amber);margin:0 0 14px}
+  .eyebrow.jade{color:var(--jade)}
+  .eyebrow.rose{color:var(--rose)}
+  h1.title{font-size:clamp(2.1rem,5vw,3.4rem);font-weight:600;margin-bottom:14px}
+  h2.sec{font-size:clamp(1.5rem,3vw,2rem);margin:0 0 8px}
+  .lede{font-size:1.12rem;color:var(--ink-dim);max-width:62ch}
+  .muted{color:var(--ink-mute)}
+  .lead-row{display:flex;flex-wrap:wrap;gap:10px;align-items:baseline}
+
+  .divider{height:1px;background:var(--line-soft);border:0;margin:40px 0}
+  .block{margin:34px 0}
+  .block > h3{font-size:1.18rem;margin-bottom:10px;display:flex;align-items:center;gap:10px}
+  .block > h3 .tag{font-family:var(--mono);font-size:.62rem;letter-spacing:.12em;text-transform:uppercase;color:var(--bg);background:var(--amber);padding:3px 8px;border-radius:20px;font-weight:600}
+
+  .card{background:linear-gradient(180deg,var(--panel),var(--bg-2));border:1px solid var(--line);border-radius:var(--rad);padding:22px;box-shadow:var(--shadow)}
+  .grid{display:grid;gap:16px}
+  .g2{grid-template-columns:repeat(2,1fr)}
+  .g3{grid-template-columns:repeat(3,1fr)}
+  .g4{grid-template-columns:repeat(4,1fr)}
+  @media(max-width:820px){.g2,.g3,.g4{grid-template-columns:1fr}}
+
+  .pill{display:inline-flex;align-items:center;gap:7px;font-family:var(--mono);font-size:.72rem;letter-spacing:.06em;color:var(--ink-dim);background:var(--panel);border:1px solid var(--line);padding:5px 11px;border-radius:30px}
+  .dot{width:8px;height:8px;border-radius:50%;background:var(--amber)}
+  .dot.jade{background:var(--jade)} .dot.rose{background:var(--rose)}
+
+  ul.clean{margin:0 0 1rem;padding-left:1.15rem}
+  ul.clean li{margin:.4rem 0}
+  dl.kv{margin:0;display:grid;grid-template-columns:auto 1fr;gap:8px 18px}
+  dl.kv dt{color:var(--ink-mute);font-family:var(--mono);font-size:.8rem}
+  dl.kv dd{margin:0}
+
+  /* buttons */
+  .btn{font-family:var(--body);font-weight:600;font-size:.9rem;border-radius:10px;border:1px solid var(--line);background:var(--panel-2);color:var(--ink);padding:10px 16px;cursor:pointer;transition:transform .1s,border-color .16s,background .16s;display:inline-flex;align-items:center;gap:9px}
+  .btn:hover{border-color:var(--amber-deep)}
+  .btn:active{transform:translateY(1px)}
+  .btn.primary{background:linear-gradient(180deg,var(--amber),var(--amber-deep));color:#231805;border-color:transparent}
+  .btn.jade{background:linear-gradient(180deg,var(--jade),var(--jade-deep));color:#062018;border-color:transparent}
+  .btn.ghost{background:transparent}
+  .btn[disabled]{opacity:.5;cursor:not-allowed}
+  .btn.sm{padding:6px 11px;font-size:.82rem}
+  :focus-visible{outline:2px solid var(--jade);outline-offset:2px;border-radius:6px}
+
+  /* swara chips */
+  .swara-row{display:flex;flex-wrap:wrap;gap:8px}
+  .swara{font-family:var(--mono);font-weight:600;font-size:1rem;min-width:54px;text-align:center;padding:11px 8px 9px;border-radius:10px;background:var(--panel-2);border:1px solid var(--line);cursor:pointer;transition:border-color .14s,transform .08s,background .14s;color:var(--ink)}
+  .swara:hover{border-color:var(--jade-deep)}
+  .swara:active{transform:translateY(1px)}
+  .swara .nm{display:block;font-size:.62rem;color:var(--ink-mute);font-weight:500;letter-spacing:.04em;margin-top:3px}
+  .swara.lit{background:linear-gradient(180deg,var(--jade),var(--jade-deep));color:#06231b;border-color:transparent}
+  .swara.komal{color:var(--rose)}
+  .swara.komal .nm{color:var(--rose)}
+
+  /* tables */
+  .tbl{width:100%;border-collapse:collapse;font-size:.92rem}
+  .tbl th,.tbl td{text-align:left;padding:10px 12px;border-bottom:1px solid var(--line-soft)}
+  .tbl th{font-family:var(--mono);font-size:.7rem;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-mute);font-weight:500}
+  .tbl td .sw{font-family:var(--mono);color:var(--amber);font-weight:600}
+  .tbl tr:hover td{background:rgba(255,255,255,.015)}
+  .scroll-x{overflow-x:auto;-webkit-overflow-scrolling:touch}
+
+  /* hole diagram */
+  .holes{display:flex;align-items:center;gap:7px}
+  .hole{width:17px;height:17px;border-radius:50%;border:2px solid var(--ink-mute)}
+  .hole.closed{background:var(--ink);border-color:var(--ink)}
+  .hole.half{background:linear-gradient(90deg,var(--ink) 50%,transparent 50%)}
+  .mouth{width:11px;height:21px;border-radius:6px;background:var(--amber-deep);margin-right:6px;opacity:.7}
+  .ob{font-family:var(--mono);font-size:.66rem;color:var(--jade);margin-left:6px}
+
+  /* large flute figure (explorer + tuner) */
+  .flute-fig{display:flex;flex-direction:column;gap:8px}
+  .fbody{display:flex;align-items:center;gap:11px;flex-wrap:wrap;background:linear-gradient(180deg,#2c2114,#1b140c);border:1px solid var(--line);border-radius:40px;padding:15px 20px}
+  .fmouth{width:17px;height:28px;border-radius:8px;background:var(--amber-deep);opacity:.85;flex:0 0 auto}
+  .fhole{width:30px;height:30px;border-radius:50%;border:2px solid var(--ink-mute);display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:.7rem;color:var(--ink-mute);flex:0 0 auto}
+  .fhole.closed{background:var(--amber);border-color:var(--amber);color:#1a1208}
+  .fhole.half{background:linear-gradient(90deg,var(--amber) 50%,transparent 50%);border-color:var(--amber);color:var(--ink)}
+  .fob{font-family:var(--mono);font-size:.72rem;color:var(--jade)}
+  .flute-fig.sm .fbody{padding:10px 13px;gap:7px;border-radius:30px}
+  .flute-fig.sm .fhole{width:23px;height:23px;font-size:.6rem}
+  .flute-fig.sm .fmouth{width:13px;height:22px}
+  .t-finger{margin-top:16px;border-top:1px solid var(--line-soft);padding-top:14px}
+
+  /* segmented toggle */
+  .seg{display:inline-flex;background:var(--panel-2);border:1px solid var(--line);border-radius:11px;padding:3px;gap:3px}
+  .seg-btn{font-family:var(--body);font-size:.8rem;font-weight:600;color:var(--ink-dim);background:transparent;border:0;padding:7px 13px;border-radius:8px;cursor:pointer;transition:background .15s,color .15s}
+  .seg-btn:hover{color:var(--ink)}
+  .seg-btn.active{background:linear-gradient(180deg,var(--amber),var(--amber-deep));color:#1a1208}
+  .swara.sel{border-color:var(--amber);background:rgba(227,169,72,.16);color:var(--ink)}
+
+  /* wave canvas */
+  .stage{position:relative;border-radius:var(--rad);overflow:hidden;background:radial-gradient(120% 140% at 50% 0%, #20190f, #120d09);border:1px solid var(--line)}
+  canvas{display:block;width:100%;height:100%}
+
+  /* tuner */
+  .tuner-grid{display:grid;grid-template-columns:1.15fr .85fr;gap:18px}
+  @media(max-width:900px){.tuner-grid{grid-template-columns:1fr}}
+  .readout{text-align:center;padding:8px 0 4px}
+  .readout .note{font-family:var(--display);font-size:clamp(3rem,11vw,5.2rem);line-height:1;font-weight:600}
+  .readout .swara-big{font-family:var(--mono);font-size:1.5rem;color:var(--jade);font-weight:600;margin-top:2px}
+  .readout .hz{font-family:var(--mono);color:var(--ink-mute);font-size:.95rem;margin-top:8px}
+  .gauge{position:relative;height:64px;margin:14px 0 4px}
+  .gauge .track{position:absolute;inset:auto 0 28px;height:8px;border-radius:6px;background:var(--panel-2);border:1px solid var(--line)}
+  .gauge .center{position:absolute;left:50%;top:4px;bottom:18px;width:2px;background:var(--jade);transform:translateX(-50%);opacity:.6}
+  .gauge .needle{position:absolute;bottom:24px;width:4px;height:30px;border-radius:4px;background:var(--amber);left:50%;transform:translateX(-50%);transition:left .08s linear,background .15s}
+  .gauge .scale{position:absolute;left:0;right:0;bottom:0;display:flex;justify-content:space-between;font-family:var(--mono);font-size:.64rem;color:var(--ink-mute)}
+  .transcript{font-family:var(--mono);font-size:1.05rem;letter-spacing:.04em;color:var(--amber);min-height:104px;background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:14px;line-height:2.1;word-break:break-word}
+  .live-dot{width:9px;height:9px;border-radius:50%;background:#555;display:inline-block;margin-right:7px}
+  .live-dot.on{background:var(--jade);box-shadow:0 0 0 0 rgba(92,199,166,.6);animation:pulse 1.4s infinite}
+  @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(92,199,166,.5)}70%{box-shadow:0 0 0 9px rgba(92,199,166,0)}100%{box-shadow:0 0 0 0 rgba(92,199,166,0)}}
+  .banner{font-size:.86rem;color:var(--ink-dim);background:rgba(217,122,102,.1);border:1px solid rgba(217,122,102,.4);border-radius:10px;padding:11px 14px;margin-top:12px}
+
+  /* controls */
+  .field{display:flex;flex-direction:column;gap:6px}
+  .field label{font-family:var(--mono);font-size:.7rem;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-mute)}
+  select,input[type=text],textarea,input[type=range]{font-family:var(--body);color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:9px;padding:9px 11px;font-size:.92rem}
+  textarea{font-family:var(--mono);width:100%;resize:vertical;min-height:88px;line-height:1.8}
+  input[type=range]{padding:0;accent-color:var(--jade)}
+  .controls{display:flex;flex-wrap:wrap;gap:14px;align-items:flex-end}
+
+  /* home hero */
+  .hero{display:grid;grid-template-columns:1.05fr .95fr;gap:36px;align-items:center}
+  @media(max-width:900px){.hero{grid-template-columns:1fr;gap:24px}}
+  .home-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:40px}
+  @media(max-width:820px){.home-cards{grid-template-columns:1fr 1fr}}
+  @media(max-width:520px){.home-cards{grid-template-columns:1fr}}
+  .home-card{display:block;text-decoration:none;background:linear-gradient(180deg,var(--panel),var(--bg-2));border:1px solid var(--line);border-radius:var(--rad);padding:18px;transition:transform .14s,border-color .16s}
+  .home-card:hover{transform:translateY(-3px);border-color:var(--amber-deep)}
+  .home-card .n{font-family:var(--mono);font-size:.72rem;color:var(--ink-mute)}
+  .home-card h4{font-size:1.12rem;margin:8px 0 5px}
+  .home-card p{font-size:.86rem;color:var(--ink-dim);margin:0}
+
+  .song-item{display:flex;justify-content:space-between;align-items:center;gap:14px;padding:13px 15px;border:1px solid var(--line);border-radius:11px;background:var(--panel);margin-bottom:10px}
+  .song-item .meta{font-family:var(--mono);font-size:.72rem;color:var(--ink-mute);margin-top:3px}
+  .song-notes{font-family:var(--mono);font-size:.92rem;color:var(--amber);background:var(--bg);border:1px solid var(--line);border-radius:9px;padding:11px 13px;margin-top:9px;line-height:2;display:none;white-space:pre-wrap}
+  .song-notes.open{display:block}
+
+  .note-small{font-size:.82rem;color:var(--ink-mute);margin-top:8px}
+
+  @media(max-width:880px){
+    .shell{grid-template-columns:1fr}
+    .side{position:fixed;inset:0 auto 0 0;width:262px;z-index:40;transform:translateX(-100%);transition:transform .22s ease}
+    .side.open{transform:none}
+    .topbar{display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:30;
+      background:rgba(22,17,13,.86);backdrop-filter:blur(10px);border-bottom:1px solid var(--line);padding:12px 16px}
+    .topbar .brand{padding:0}
+    .topbar .brand b{font-size:1.05rem}
+    .hamb{background:var(--panel-2);border:1px solid var(--line);border-radius:9px;width:42px;height:38px;color:var(--ink);font-size:1.2rem;cursor:pointer}
+    .scrim{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:39;display:none}
+    .scrim.show{display:block}
+    .wrap{padding-top:34px}
+  }
+  @media(prefers-reduced-motion:reduce){
+    *{animation:none!important;transition:none!important;scroll-behavior:auto!important}
+  }
+</style>
+</head>
+<body>
+
+<div class="shell">
+  <!-- Sidebar -->
+  <aside class="side" id="side">
+    <a class="brand" href="#home">
+      <svg class="mark" viewBox="0 0 40 40" fill="none" aria-hidden="true">
+        <rect x="3" y="15" width="34" height="10" rx="5" fill="#2a231b" stroke="#b9842f" stroke-width="1.4"/>
+        <circle cx="11" cy="20" r="2" fill="#e3a948"/><circle cx="18" cy="20" r="2" fill="#e3a948"/>
+        <circle cx="25" cy="20" r="2" fill="#e3a948"/><circle cx="32" cy="20" r="1.6" fill="#5cc7a6"/>
+        <path d="M3 20 q-2 -6 -3 0 q-2 6 3 0" stroke="#5cc7a6" stroke-width="1.2" fill="none" opacity=".7"/>
+      </svg>
+      <span><b>Kuzhal</b><small>Bamboo flute</small></span>
+    </a>
+    <nav class="nav" id="nav">
+      <a href="#home" data-route="home"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M3 11l9-7 9 7"/><path d="M5 10v10h14V10"/></svg>Home</a>
+      <a href="#basics" data-route="basics"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M4 5h16v14H4z"/><path d="M8 5v14"/></svg>Flute basics</a>
+      <a href="#sound" data-route="sound"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M3 12h2l3-7 4 14 3-9 2 2h4"/></svg>Sound &amp; waves</a>
+      <a href="#notation" data-route="notation"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M9 18V5l10-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="16" cy="16" r="3"/></svg>Notation &amp; fingering</a>
+      <a href="#scales" data-route="scales"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M4 20V4M4 8h6M4 12h10M4 16h6"/></svg>Scales &amp; keys</a>
+      <a href="#ragas" data-route="ragas"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="12" r="9"/><path d="M12 3a9 9 0 000 18M3 12h18"/></svg>Ragas</a>
+      <a href="#songs" data-route="songs"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M9 18V6l10-2v12"/><circle cx="6" cy="18" r="3"/><circle cx="16" cy="16" r="3"/></svg>Songs &amp; practice</a>
+      <a href="#tuner" data-route="tuner"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M12 3v3M5 12H2M22 12h-3M12 12l5-3"/><circle cx="12" cy="12" r="9"/></svg>Tuner &amp; transcribe</a>
+    </nav>
+    <div class="side-foot">
+      Built for learners of Carnatic &amp; Hindustani flute. Works offline once loaded.
+    </div>
+  </aside>
+  <div class="scrim" id="scrim"></div>
+
+  <!-- Main -->
+  <main class="main">
+    <div class="topbar">
+      <a class="brand" href="#home"><svg class="mark" viewBox="0 0 40 40" fill="none" aria-hidden="true"><rect x="3" y="15" width="34" height="10" rx="5" fill="#2a231b" stroke="#b9842f" stroke-width="1.4"/><circle cx="11" cy="20" r="2" fill="#e3a948"/><circle cx="18" cy="20" r="2" fill="#e3a948"/><circle cx="25" cy="20" r="2" fill="#e3a948"/></svg><span><b>Kuzhal</b></span></a>
+      <button class="hamb" id="hamb" aria-label="Open menu">☰</button>
+    </div>
+    <div class="wrap">
+
+      <!-- ============ HOME ============ -->
+      <section class="view" id="view-home" data-view="home">
+        <div class="hero">
+          <div>
+            <p class="eyebrow">Carnatic &amp; Hindustani · Venu &amp; Bansuri</p>
+            <h1 class="title">Learn the flute as breath made visible.</h1>
+            <p class="lede">One quiet place to understand how the flute makes sound, read the swaras, find finger placements, explore ragas, and practise — with a live tuner that listens to you play and writes the notes down.</p>
+            <div class="lead-row" style="margin-top:22px;gap:12px">
+              <a class="btn primary" href="#basics">Start with the basics</a>
+              <a class="btn jade" href="#tuner">Open the tuner</a>
+            </div>
+          </div>
+          <div class="stage" style="aspect-ratio:5/4">
+            <canvas id="heroWave"></canvas>
+          </div>
+        </div>
+
+        <div class="home-cards" id="homeCards"></div>
+      </section>
+
+      <!-- ============ BASICS ============ -->
+      <section class="view" id="view-basics" data-view="basics">
+        <p class="eyebrow">01 · Flute basics</p>
+        <h1 class="title">Holding breath, holding bamboo.</h1>
+        <p class="lede">Before notes, the body. A flute rewards a relaxed posture, a steady breath, and a soft, aimed stream of air across the blowing hole.</p>
+
+        <div class="grid g2 block">
+          <div class="card">
+            <h3>Parts of the flute</h3>
+            <dl class="kv">
+              <dt>Blowing hole</dt><dd>The hole near the closed (cork) end you blow across — not into.</dd>
+              <dt>Finger holes</dt><dd>6 on a typical bansuri, often 7–8 on a Carnatic venu.</dd>
+              <dt>Closed end</dt><dd>Stopped just past the blowing hole; sets the air column's start.</dd>
+              <dt>Open end</dt><dd>The far end the air column "ends" at when all holes are shut.</dd>
+            </dl>
+          </div>
+          <div class="card">
+            <h3>The first sound</h3>
+            <ul class="clean">
+              <li>Rest the blowing hole on your lower lip, hole facing up.</li>
+              <li>Make a small "pooh" shape with your lips; aim a thin stream of air across the far edge of the hole.</li>
+              <li>Roll the flute slightly in/out to find the angle where the tone "locks in."</li>
+              <li>Start with all finger holes open — chase a clear tone before chasing notes.</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="block">
+          <h3>Carnatic venu vs. Hindustani bansuri</h3>
+          <div class="scroll-x card">
+            <table class="tbl">
+              <thead><tr><th>&nbsp;</th><th>Carnatic (Venu / Pullanguzhal)</th><th>Hindustani (Bansuri)</th></tr></thead>
+              <tbody>
+                <tr><td class="muted">Typical holes</td><td>7–8 finger holes</td><td>6 finger holes (sometimes 7)</td></tr>
+                <tr><td class="muted">Feel</td><td>Faster, ornament-dense gamakas</td><td>Long breath, meend (glides)</td></tr>
+                <tr><td class="muted">Reference note</td><td>Sa fixed by the chosen venu</td><td>Sa set by the bansuri's key</td></tr>
+                <tr><td class="muted">Note names</td><td>Sa Ri Ga Ma Pa Da Ni</td><td>Sa Re Ga Ma Pa Dha Ni</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="note-small">The instrument is the same family — the difference is mostly in repertoire, ornamentation, and how Sa is fixed.</p>
+        </div>
+
+        <div class="grid g3 block">
+          <div class="card"><h3 style="font-size:1.05rem">Breath</h3><p class="muted" style="margin:0">Breathe from the belly, not the chest. A note ends where breath ends — plan phrases so you're not gasping mid-line.</p></div>
+          <div class="card"><h3 style="font-size:1.05rem">Posture</h3><p class="muted" style="margin:0">Shoulders down, neck long, flute roughly horizontal or angled slightly down. Fingers curved, pads (not tips) sealing the holes.</p></div>
+          <div class="card"><h3 style="font-size:1.05rem">Choosing your first</h3><p class="muted" style="margin:0">A medium bansuri in <b>G</b> or <b>A</b> is a common, comfortable start. Smaller flutes (E, F) are easy to cover but shrill; long ones strain new hands.</p></div>
+        </div>
+
+        <div class="card block">
+          <h3>A simple daily routine</h3>
+          <ul class="clean">
+            <li><b>Long tones (5 min)</b> — hold each open-hole note steady; listen for a beat-free, even tone.</li>
+            <li><b>Sarali varisai (10 min)</b> — the foundational ascending/descending patterns (see Songs &amp; practice).</li>
+            <li><b>One raga's scale (5 min)</b> — slow, in tune, then a little faster.</li>
+            <li><b>Play something you love (10 min)</b> — use the tuner to check the notes you're unsure of.</li>
+          </ul>
+        </div>
+      </section>
+
+      <!-- ============ SOUND & WAVES ============ -->
+      <section class="view" id="view-sound" data-view="sound">
+        <p class="eyebrow jade">02 · Sound &amp; waves</p>
+        <h1 class="title">A flute is a tuned column of moving air.</h1>
+        <p class="lede">Blow across the hole and the air inside the tube vibrates as a standing wave. The length of that air column decides the pitch — and your fingers change that length.</p>
+
+        <div class="stage block" style="aspect-ratio:21/8">
+          <canvas id="pipeWave"></canvas>
+        </div>
+        <div class="controls card" style="margin-top:-6px">
+          <div class="field" style="flex:1;min-width:220px">
+            <label>Air-column length (effective)</label>
+            <input type="range" id="pipeLen" min="0.18" max="0.66" step="0.005" value="0.45">
+          </div>
+          <div class="field" style="min-width:150px">
+            <label>Harmonic (overblow)</label>
+            <select id="pipeHarm"><option value="1">1 · fundamental</option><option value="2">2 · octave up</option><option value="3">3 · twelfth</option></select>
+          </div>
+          <div class="pill"><span class="dot jade"></span><span id="pipeReadout">—</span></div>
+        </div>
+
+        <div class="grid g2 block">
+          <div class="card">
+            <h3>Pitch, loudness, timbre</h3>
+            <dl class="kv">
+              <dt>Pitch</dt><dd>How fast the air vibrates — its <b>frequency</b> in hertz (Hz). Faster = higher.</dd>
+              <dt>Loudness</dt><dd>How big the vibration is — its <b>amplitude</b>. Harder breath, louder note.</dd>
+              <dt>Timbre</dt><dd>The blend of <b>harmonics</b> riding on the fundamental — why a flute sounds like a flute.</dd>
+            </dl>
+          </div>
+          <div class="card">
+            <h3>Why the flute is an "open pipe"</h3>
+            <p class="muted">Air can move freely at both the blowing hole and the open end, so both act as pressure "anti-nodes." The lowest standing wave that fits has a half-wavelength equal to the tube length:</p>
+            <p class="mono" style="font-family:var(--mono);color:var(--amber);font-size:1.05rem;margin:6px 0">f = v / (2L)</p>
+            <p class="note-small">v ≈ 343 m/s (speed of sound in warm air). Halve the effective length and the pitch jumps an octave — exactly what overblowing does.</p>
+          </div>
+        </div>
+
+        <div class="block">
+          <h3>How each note "travels" down the tube</h3>
+          <p class="muted">Opening a finger hole lets the air column end early there, shortening the effective length and raising the pitch. So the note isn't really moving — you're resizing the resonator. The table shows the idea for a flute whose Sa sits around 440&nbsp;Hz.</p>
+          <div class="scroll-x card">
+            <table class="tbl">
+              <thead><tr><th>Swara</th><th>Frequency (Hz)</th><th>Effective length</th><th>Wavelength</th></tr></thead>
+              <tbody id="travelTable"></tbody>
+            </table>
+          </div>
+          <p class="note-small">Equal-tempered, A4 = 440 Hz. Real flutes use end-corrections and slightly different tunings, but the relationship — shorter column, higher pitch — always holds.</p>
+        </div>
+
+        <div class="grid g2 block">
+          <div class="card">
+            <h3>Harmonics &amp; octaves</h3>
+            <p class="muted" style="margin:0">Blow a little harder and faster and the same fingering jumps to the 2nd harmonic — an octave up. This is how a flute reaches its upper register without extra holes. The 3rd harmonic is an octave-plus-a-fifth.</p>
+          </div>
+          <div class="card">
+            <h3>Cents: measuring "in tune"</h3>
+            <p class="muted" style="margin:0">An octave splits into 1200 <b>cents</b>; a semitone is 100. The tuner shows how many cents sharp or flat you are. Inside about ±5 cents sounds locked-in to most ears.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ NOTATION & FINGERING ============ -->
+      <section class="view" id="view-notation" data-view="notation">
+        <p class="eyebrow rose">03 · Notation &amp; fingering</p>
+        <h1 class="title">Seven names, twelve pitches, one breath.</h1>
+        <p class="lede">Both traditions name seven swaras; the in-between pitches give twelve in all. Tap any swara to hear it on a flute tuned to your chosen Sa.</p>
+
+        <div class="controls card block">
+          <div class="field"><label>Your Sa (flute key)</label>
+            <select id="saSelect"></select>
+          </div>
+          <div class="field"><label>Octave</label>
+            <select id="saOct"><option>3</option><option selected>4</option><option>5</option></select>
+          </div>
+          <span class="pill"><span class="dot"></span><span id="saHz">—</span></span>
+          <button class="btn jade sm" id="playScaleBtn">▶ Play the scale</button>
+        </div>
+
+        <div class="block">
+          <h3>The twelve swarasthanas <span class="tag">tap to hear</span></h3>
+          <div class="swara-row" id="swaraBoard"></div>
+          <p class="note-small">Lowercase / rose = <b>komal</b> (lowered, Hindustani) ≈ the lower Carnatic variants. M with a mark = <b>tivra / prati madhyama</b>.</p>
+        </div>
+
+        <div class="grid g2 block">
+          <div class="card">
+            <h3>Carnatic swaras</h3>
+            <p class="muted" style="margin:0 0 8px">Sixteen names map onto twelve pitches (some share a position):</p>
+            <div class="scroll-x"><table class="tbl"><tbody id="carnaticTbl"></tbody></table></div>
+          </div>
+          <div class="card">
+            <h3>Hindustani sargam</h3>
+            <p class="muted" style="margin:0 0 8px">Shuddha (natural), komal (♭) and one tivra (♯) Ma:</p>
+            <div class="scroll-x"><table class="tbl"><tbody id="hindTbl"></tbody></table></div>
+          </div>
+        </div>
+
+        <div class="block">
+          <div class="lead-row" style="justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap">
+            <h3 style="margin:0">Fingering chart — middle octave</h3>
+            <div class="seg" id="fluteToggleTbl">
+              <button class="seg-btn active" data-flute="bansuri">Bansuri · 6-hole</button>
+              <button class="seg-btn" data-flute="venu">Carnatic venu · 8-hole</button>
+            </div>
+          </div>
+          <p class="muted">Filled = closed, ring = open, half = half-hole. ↟ means overblow (faster, harder air) to reach the upper notes with the same fingers. Hole 1 is nearest the blowing hole.</p>
+          <div class="card scroll-x"><table class="tbl"><thead><tr><th>Swara</th><th id="fingerHead">Holes (1 → 6)</th><th>Note</th></tr></thead><tbody id="fingerTbl"></tbody></table></div>
+          <p class="note-small">A common standard chart; komal/tivra notes use half-holing and vary by flute and maker. The Carnatic venu shown is the 8-hole layout — in the middle octave its two lowest holes stay closed and the upper six behave like the bansuri. Follow your teacher's chart where it differs.</p>
+        </div>
+
+        <div class="block">
+          <div class="lead-row" style="justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap">
+            <h3 style="margin:0">Explore each swara — fingering &amp; wave</h3>
+            <div class="seg" id="fluteToggle">
+              <button class="seg-btn active" data-flute="bansuri">Bansuri · 6-hole</button>
+              <button class="seg-btn" data-flute="venu">Carnatic venu · 8-hole</button>
+            </div>
+          </div>
+          <p class="muted">Tap a swara to see how to finger it, watch the shape of its sound wave, and hear it on a flute tuned to your Sa above.</p>
+          <div class="swara-row" id="exSwaras" style="margin:6px 0 16px"></div>
+          <div class="grid g2">
+            <div class="card">
+              <div class="muted" style="font-size:.8rem;margin-bottom:12px">Finger position — hole 1 nearest the mouth</div>
+              <div class="flute-fig" id="exFlute"></div>
+              <p class="note-small" id="exFingerNote" style="margin-top:12px"></p>
+            </div>
+            <div class="card">
+              <div class="muted" style="font-size:.8rem;margin-bottom:12px">How its sound wave looks (higher swara → shorter wave)</div>
+              <div class="stage" style="aspect-ratio:16/7"><canvas id="exWave"></canvas></div>
+              <div class="lead-row" style="margin-top:12px;justify-content:space-between;gap:10px;flex-wrap:wrap">
+                <span class="pill"><span class="dot jade"></span><span id="exReadout">—</span></span>
+                <button class="btn jade sm" id="exPlay">▶ Hear it</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card block">
+          <h3>How to read the swara text used on this site</h3>
+          <dl class="kv">
+            <dt>S R G m P D N</dt><dd>The seven shuddha swaras (m = suddha/lower Ma).</dd>
+            <dt>r g d n</dt><dd>Komal (lowered) Re, Ga, Dha, Ni.</dd>
+            <dt>M</dt><dd>Tivra / prati Ma.</dd>
+            <dt>S'  ·  S,</dt><dd>Apostrophe = upper octave; comma = lower octave.</dd>
+            <dt>–</dt><dd>Hold the previous note (one extra beat).</dd>
+          </dl>
+        </div>
+      </section>
+
+      <!-- ============ SCALES & KEYS ============ -->
+      <section class="view" id="view-scales" data-view="scales">
+        <p class="eyebrow">04 · Scales &amp; keys</p>
+        <h1 class="title">A flute's "key" is simply where Sa lives.</h1>
+        <p class="lede">Pick a key and the whole movable swara system slides to a new home pitch. Here's what each common bansuri key gives you, and the exact frequencies of its swaras.</p>
+
+        <div class="controls card block">
+          <div class="field"><label>Flute key (Sa)</label><select id="keySelect"></select></div>
+          <div class="field"><label>Octave</label><select id="keyOct"><option>3</option><option selected>4</option><option>5</option></select></div>
+          <span class="pill"><span class="dot jade"></span><span id="keyInfo">—</span></span>
+        </div>
+
+        <div class="grid g2 block">
+          <div class="card">
+            <h3>Swara frequencies for this flute</h3>
+            <div class="scroll-x"><table class="tbl"><thead><tr><th>Swara</th><th>Note</th><th>Hz</th></tr></thead><tbody id="keyFreqTbl"></tbody></table></div>
+          </div>
+          <div class="card">
+            <h3>Common keys at a glance</h3>
+            <div class="scroll-x"><table class="tbl"><thead><tr><th>Key</th><th>Character</th><th>Good for</th></tr></thead><tbody id="keyGuideTbl"></tbody></table></div>
+            <p class="note-small">"Length" is relative — lower keys are longer flutes with a wider finger reach.</p>
+          </div>
+        </div>
+
+        <div class="card block">
+          <h3>What changes when you change keys?</h3>
+          <p class="muted" style="margin:0">Nothing about the <em>relationships</em> between swaras — Sa to Pa is always a perfect fifth. Only the absolute pitches move. That's why notation written in swaras is portable across flutes: the same "S R G P D" plays correctly on a C flute and an A flute; it just sounds higher or lower.</p>
+        </div>
+      </section>
+
+      <!-- ============ RAGAS ============ -->
+      <section class="view" id="view-ragas" data-view="ragas">
+        <p class="eyebrow rose">05 · Ragas</p>
+        <h1 class="title">Scales with a mood and a path.</h1>
+        <p class="lede">A raga is more than notes — it has an ascent (arohana), a descent (avarohana), and a feeling. Tap play to hear each one climb and fall on your chosen flute.</p>
+
+        <div class="controls card block">
+          <div class="field"><label>Play in key</label><select id="ragaKey"></select></div>
+          <div class="field"><label>Tempo</label><select id="ragaTempo"><option value="520">Slow</option><option value="360" selected>Medium</option><option value="240">Brisk</option></select></div>
+          <span class="muted" style="font-size:.84rem">Carnatic name · Hindustani equivalent</span>
+        </div>
+
+        <div class="grid g2" id="ragaGrid"></div>
+      </section>
+
+      <!-- ============ SONGS & PRACTICE ============ -->
+      <section class="view" id="view-songs" data-view="songs">
+        <p class="eyebrow">06 · Songs &amp; practice</p>
+        <h1 class="title">Play it, hear it, write it down.</h1>
+        <p class="lede">Practice patterns and public-domain melodies you can play right now — plus your own notebook for any tune you're learning. Enter swaras, hear them on a flute, and save them in your browser.</p>
+
+        <div class="controls card block">
+          <div class="field"><label>Play in key</label><select id="songKey"></select></div>
+          <div class="field"><label>Tempo</label><select id="songTempo"><option value="600">Slow</option><option value="420" selected>Medium</option><option value="300">Brisk</option></select></div>
+        </div>
+
+        <div class="block">
+          <h3>Practice patterns <span class="tag">traditional</span></h3>
+          <div id="practiceList"></div>
+        </div>
+
+        <div class="block">
+          <h3>Beginner melodies <span class="tag">public domain</span></h3>
+          <div id="pdList"></div>
+        </div>
+
+        <div class="block">
+          <h3>Tamil songs, BGMs &amp; solos</h3>
+          <div class="banner" style="background:rgba(227,169,72,.08);border-color:rgba(227,169,72,.35);color:var(--ink-dim)">
+            Film-song notations are copyrighted, so they aren't bundled here. Instead, use your notebook below to transcribe songs you're learning — the tuner can help you find each note — then play them back to check yourself.
+          </div>
+        </div>
+
+        <div class="card block">
+          <h3>Your notebook</h3>
+          <div class="field" style="margin-bottom:12px"><label>Title</label><input type="text" id="nbTitle" placeholder="e.g. My first Tamil melody (Mohanam)"></div>
+          <div class="field"><label>Swaras — e.g. S R G P D S'  ·  use , and ' for octaves, – to hold</label>
+            <textarea id="nbNotes" placeholder="S R G P  D P G R  S R G P  D S'"></textarea>
+          </div>
+          <div class="lead-row" style="margin-top:12px;gap:10px">
+            <button class="btn jade sm" id="nbPlay">▶ Play</button>
+            <button class="btn sm" id="nbStop">■ Stop</button>
+            <button class="btn primary sm" id="nbSave">Save to notebook</button>
+          </div>
+          <div id="nbList" style="margin-top:18px"></div>
+        </div>
+      </section>
+
+      <!-- ============ TUNER ============ -->
+      <section class="view" id="view-tuner" data-view="tuner">
+        <p class="eyebrow jade">07 · Tuner &amp; transcribe</p>
+        <h1 class="title">Play. It listens, names the swara, and writes it down.</h1>
+        <p class="lede">The tuner uses your microphone to detect the pitch you're playing, shows how in-tune it is, and — when transcription is on — logs the swaras as you go.</p>
+
+        <div class="controls card block">
+          <div class="field"><label>This flute's Sa</label><select id="tunerKey"></select></div>
+          <div class="field"><label>Octave</label><select id="tunerOct"><option>3</option><option selected>4</option><option>5</option></select></div>
+          <div class="field"><label>Naming</label><select id="tunerSystem"><option value="carnatic">Carnatic (S R G…)</option><option value="hindustani">Hindustani (Sa Re Ga…)</option></select></div>
+          <div class="field"><label>Flute</label><select id="tunerFlute"><option value="bansuri">Bansuri · 6-hole</option><option value="venu">Carnatic venu · 8-hole</option></select></div>
+          <button class="btn jade" id="tunerStart">Start listening</button>
+          <button class="btn ghost sm" id="tunerStop" disabled>Stop</button>
+          <span class="pill"><span class="live-dot" id="liveDot"></span><span id="tunerStatus">Idle</span></span>
+        </div>
+
+        <div class="tuner-grid block">
+          <div class="card">
+            <div class="readout">
+              <div class="note" id="tNote">—</div>
+              <div class="swara-big" id="tSwara">play a steady note</div>
+              <div class="hz" id="tHz">0.0 Hz</div>
+            </div>
+            <div class="gauge">
+              <div class="track"></div><div class="center"></div>
+              <div class="needle" id="tNeedle"></div>
+              <div class="scale"><span>-50¢</span><span>in tune</span><span>+50¢</span></div>
+            </div>
+            <div class="stage" style="aspect-ratio:16/5;margin-top:14px"><canvas id="tunerScope"></canvas></div>
+            <div class="t-finger">
+              <div class="muted" style="font-size:.8rem;margin-bottom:10px">Estimated fingering</div>
+              <div class="flute-fig sm" id="tFlute"></div>
+              <p class="note-small" id="tFingerNote" style="margin-top:10px">Play a note to see the fingering.</p>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="lead-row" style="justify-content:space-between;margin-bottom:10px">
+              <h3 style="font-size:1.05rem;margin:0">Transcript</h3>
+              <label class="pill" style="cursor:pointer"><input type="checkbox" id="transToggle" checked style="margin-right:7px;accent-color:var(--jade)">on</label>
+            </div>
+            <div class="transcript" id="transcript"><span class="muted">Swaras will appear here as you play clear, steady notes…</span></div>
+            <div class="lead-row" style="margin-top:12px;gap:9px">
+              <button class="btn sm" id="transCopy">Copy</button>
+              <button class="btn sm" id="transClear">Clear</button>
+              <button class="btn sm" id="transToNb">Send to notebook →</button>
+            </div>
+            <p class="note-small">Best with one clear note at a time. Background noise and harmonics can fool any single-note detector — trust your ear too.</p>
+          </div>
+        </div>
+
+        <div class="banner" id="micBanner" style="display:none"></div>
+        <p class="note-small">Microphone access needs a secure page (https) or <span class="mono" style="font-family:var(--mono)">localhost</span>. If you opened this file directly and the mic won't start, run a tiny local server — e.g. <span class="mono" style="font-family:var(--mono)">python3 -m http.server</span> in this folder, then visit <span class="mono" style="font-family:var(--mono)">localhost:8000</span>.</p>
+      </section>
+
+    </div>
+  </main>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>
