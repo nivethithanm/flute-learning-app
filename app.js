@@ -430,31 +430,60 @@ function swaraWaveAnim(){
     }
     ctx.globalAlpha = 1;
 
-    // standing wave inside flute body — harmonic count changes with overblow
+    // Find the first open hole — that's where the air column effectively ends
+    // Closed holes from the left extend the resonating column; first open hole cuts it short
+    let firstOpenIdx = holes.length; // default: all closed = full length
+    for(let i = 0; i < holes.length; i++){
+      if(holes[i] !== 'c'){ firstOpenIdx = i; break; }
+    }
+    const holeStart = fluteX0 + fluteLen * 0.26;
+    const holeEnd   = fluteX0 + fluteLen * 0.88;
+    const holeSpacingX = (holeEnd - holeStart) / Math.max(holes.length - 1, 1);
+    // Effective resonating length ends at the first open hole position (or full tube if all closed)
+    const effEnd = firstOpenIdx >= holes.length
+      ? fluteX1 - 4                                    // all closed → full tube
+      : holeStart + firstOpenIdx * holeSpacingX;       // ends at first open hole
+    const effRatio = (effEnd - (fluteX0 + fluteLen*0.14)) / (fluteX1 - 4 - (fluteX0 + fluteLen*0.14));
+
+    // Standing wave inside — only drawn up to effEnd; amplitude = 0 at ends, peak at middle
     const stAmp = fluteH * 0.28;
     ctx.strokeStyle = cJade; ctx.lineWidth = 1.8; ctx.globalAlpha = 0.45;
     ctx.beginPath();
-    const bx0 = fluteX0 + fluteLen*0.14, bx1 = fluteX1 - 4;
-    for(let x = bx0; x <= bx1; x++){
-      const u = (x - bx0) / (bx1 - bx0);
-      const env = Math.sin(Math.PI * u * harmonic); // 1 half-wave (fund) or 2 (overblow)
+    const bx0 = fluteX0 + fluteLen*0.14;
+    for(let x = bx0; x <= effEnd; x++){
+      const u = (x - bx0) / (effEnd - bx0);
+      const env = Math.sin(Math.PI * u * harmonic);
       const y = cy - stAmp * env * Math.cos(t * 2.2 * harmonic);
       x === bx0 ? ctx.moveTo(x,y) : ctx.lineTo(x,y);
     }
     ctx.stroke(); ctx.globalAlpha = 1;
 
+    // Dashed "dead air" from effEnd to tube end (air beyond first open hole doesn't vibrate)
+    if(effEnd < fluteX1 - 6){
+      ctx.strokeStyle = cInkMut; ctx.lineWidth = 1; ctx.globalAlpha = 0.3;
+      ctx.setLineDash([4, 5]);
+      ctx.beginPath(); ctx.moveTo(effEnd, cy); ctx.lineTo(fluteX1 - 4, cy); ctx.stroke();
+      ctx.setLineDash([]); ctx.globalAlpha = 1;
+    }
+
+    // Label: effective length % of full tube
+    const pct = Math.round(effRatio * 100);
+    ctx.fillStyle = cAmber; ctx.font = `500 ${Math.max(9, h*0.085)}px var(--mono,monospace)`;
+    ctx.textAlign = 'center';
+    ctx.fillText(`↔ ${pct}% of tube resonates`, bx0 + (effEnd - bx0)/2, cy - fluteH/2 - 8);
+    ctx.textAlign = 'left';
+
     // finger holes
-    const holeStart = fluteX0 + fluteLen * 0.26;
-    const holeEnd   = fluteX0 + fluteLen * 0.88;
-    const holeSpacing = (holeEnd - holeStart) / Math.max(nHoles - 1, 1);
+    const holeSpacing = holeSpacingX;
     const holeR = Math.min(fluteH * 0.19, 7);
     holes.forEach((state, i) => {
       const hx = holeStart + i * holeSpacing;
+      const isFirstOpen = (i === firstOpenIdx);
       ctx.beginPath(); ctx.arc(hx, cy, holeR, 0, Math.PI*2);
       if(state === 'c'){
         ctx.fillStyle = cAmber; ctx.fill();
+        ctx.strokeStyle = cAmber; ctx.lineWidth = 1; ctx.stroke();
       } else if(state === 'h'){
-        // half-hole: filled left half
         ctx.fillStyle = cPanel; ctx.fill();
         ctx.beginPath(); ctx.arc(hx, cy, holeR, -Math.PI/2, Math.PI/2); ctx.lineTo(hx, cy); ctx.closePath();
         ctx.fillStyle = cAmber; ctx.fill();
@@ -464,13 +493,25 @@ function swaraWaveAnim(){
         ctx.fillStyle = cPanel; ctx.fill();
         ctx.strokeStyle = cInkMut; ctx.lineWidth = 1.2; ctx.stroke();
       }
+      // Glow ring around the first open hole — marks where resonance ends
+      if(isFirstOpen){
+        ctx.globalAlpha = 0.55 + 0.3 * Math.sin(t * 3);
+        ctx.strokeStyle = cJade; ctx.lineWidth = 2;
+        ctx.beginPath(); ctx.arc(hx, cy, holeR + 4, 0, Math.PI*2); ctx.stroke();
+        ctx.globalAlpha = 1;
+        // small downward arrow below
+        ctx.fillStyle = cJade; ctx.font = `600 ${Math.max(8,h*0.075)}px var(--mono,monospace)`;
+        ctx.textAlign = 'center';
+        ctx.fillText('▼ sound exits', hx, cy + fluteH/2 + 13);
+        ctx.textAlign = 'left';
+      }
     });
 
-    // overblow label
+    // overblow label (shown below the tube so it doesn't clash with effLength label)
     if(ob){
-      ctx.fillStyle = cJade; ctx.font = `500 ${Math.max(9,h*0.10)}px var(--mono,monospace)`;
-      ctx.textAlign = 'center';
-      ctx.fillText('↟ overblow', fluteX0 + fluteLen*0.5, cy - fluteH/2 - 6);
+      ctx.fillStyle = cJade; ctx.font = `500 ${Math.max(9,h*0.09)}px var(--mono,monospace)`;
+      ctx.textAlign = 'left';
+      ctx.fillText('↟ overblow → 2nd harmonic', fluteX0 + fluteLen*0.3, cy + fluteH/2 + 14);
     }
 
     // ---- Connector: wave flows from open end of flute ----
