@@ -172,31 +172,42 @@ const HIND = [
 ];
 const FINGER = [ // h1..h6: c closed, o open, h half. ob = overblow
   ['S',  ['c','c','c','o','o','o'], false, 'Sa'],
-  ['R',  ['c','c','o','o','o','o'], false, 'Re'],
-  ['G',  ['c','o','o','o','o','o'], false, 'Ga'],
-  ['m',  ['o','o','o','o','o','o'], false, 'Ma'],
+  ['r',  ['c','c','h','o','o','o'], false, 'komal Re (half-hole 3)'],
+  ['R',  ['c','c','o','o','o','o'], false, 'shuddha Re'],
+  ['g',  ['c','h','o','o','o','o'], false, 'komal Ga (half-hole 2)'],
+  ['G',  ['c','o','o','o','o','o'], false, 'shuddha Ga'],
+  ['m',  ['o','o','o','o','o','o'], false, 'shuddha Ma'],
+  ['M',  ['h','o','o','o','o','o'], false, 'tivra Ma (half-hole 1)'],
   ['P',  ['c','c','c','c','c','c'], true,  'Pa'],
-  ['D',  ['c','c','c','c','c','o'], true,  'Dha'],
-  ['N',  ['c','c','c','c','o','o'], true,  'Ni'],
+  ['d',  ['c','c','c','c','c','h'], true,  'komal Dha (half-hole 6)'],
+  ['D',  ['c','c','c','c','c','o'], true,  'shuddha Dha'],
+  ['n',  ['c','c','c','c','h','o'], true,  'komal Ni (half-hole 5)'],
+  ['N',  ['c','c','c','c','o','o'], true,  'shuddha Ni'],
   ["S'", ['c','c','c','o','o','o'], true,  'upper Sa'],
 ];
-// Carnatic venu — common 8-hole layout. In the middle octave the two lowest
-// holes (7,8) stay closed and the upper six behave like the bansuri; opening
-// 7,8 reaches the lower (mandra) octave. Layout varies by maker/teacher.
+// Carnatic venu — standard 8-hole layout (Pullanguzhal).
+// Holes 1-6 are the main finger holes; 7 is the lower Pa hole; 8 is thumb/lowest.
+// For middle octave (madhya sthayi) holes 7 & 8 stay closed.
+// Opening holes 7+8 with all 1-6 closed gives mandra sthayi Pa (no overblow).
 const FINGER_VENU = [
-  ['S',  ['c','c','c','o','o','o','c','c'], false, 'Sa'],
-  ['R',  ['c','c','o','o','o','o','c','c'], false, 'Re'],
-  ['G',  ['c','o','o','o','o','o','c','c'], false, 'Ga'],
-  ['m',  ['o','o','o','o','o','o','c','c'], false, 'Ma'],
-  ['P',  ['c','c','c','c','c','c','c','c'], true,  'Pa'],
-  ['D',  ['c','c','c','c','c','o','c','c'], true,  'Dha'],
-  ['N',  ['c','c','c','c','o','o','c','c'], true,  'Ni'],
+  ['S',  ['c','c','c','o','o','o','c','c'], false, 'Sa (madhya)'],
+  ['r',  ['c','c','h','o','o','o','c','c'], false, 'komal Ri — half-hole 3'],
+  ['R',  ['c','c','o','o','o','o','c','c'], false, 'shuddha Ri'],
+  ['g',  ['c','h','o','o','o','o','c','c'], false, 'sadharana Ga — half-hole 2'],
+  ['G',  ['c','o','o','o','o','o','c','c'], false, 'antara Ga'],
+  ['m',  ['o','o','o','o','o','o','c','c'], false, 'shuddha Ma'],
+  ['M',  ['h','o','o','o','o','o','c','c'], false, 'prati Ma — half-hole 1'],
+  ['P',  ['c','c','c','c','c','c','c','c'], true,  'Pa (overblow)'],
+  ['d',  ['c','c','c','c','c','h','c','c'], true,  'komal Da — half-hole 6'],
+  ['D',  ['c','c','c','c','c','o','c','c'], true,  'shuddha Da'],
+  ['n',  ['c','c','c','c','h','o','c','c'], true,  'komal Ni — half-hole 5'],
+  ['N',  ['c','c','c','c','o','o','c','c'], true,  'shuddha Ni'],
   ["S'", ['c','c','c','o','o','o','c','c'], true,  'upper Sa'],
 ];
-// which charted natural each pitch-class maps to, + an alteration hint
+// which charted token each pitch-class maps to for tuner fingering display
 // idx: 0 S, 1 r, 2 R, 3 g, 4 G, 5 m, 6 M, 7 P, 8 d, 9 D, 10 n, 11 N
-const FING_BASE = ['S','S','R','R','G','m','m','P','P','D','D','N'];
-const FING_ALT  = [null,'komal — shade / half-hole',null,'komal — shade / half-hole',null,null,'tivra — half-hole hole 1',null,'komal — shade / half-hole',null,'komal — shade / half-hole',null];
+const FING_BASE = ['S','r','R','g','G','m','M','P','d','D','n','N'];
+const FING_ALT  = [null,'half-hole 3',null,'half-hole 2',null,null,'half-hole 1',null,'half-hole 6',null,'half-hole 5',null];
 function fingerChart(){ return fluteType === 'venu' ? FINGER_VENU : FINGER; }
 // fingering for a charted token (e.g. "S", "P", "S'")
 function fingeringFor(tok){
@@ -206,9 +217,10 @@ function fingeringFor(tok){
 }
 // fingering for a detected pitch-class index 0..11 (middle octave), with hint
 function fingeringForIdx(idx){
-  const base = FING_BASE[((idx%12)+12)%12];
-  const f = fingeringFor(base);
-  return f ? {...f, baseTok: base, alt: FING_ALT[((idx%12)+12)%12]} : null;
+  const i = ((idx%12)+12)%12;
+  const tok = FING_BASE[i];
+  const f = fingeringFor(tok);
+  return f ? {...f, baseTok: tok, alt: FING_ALT[i]} : null;
 }
 const KEY_GUIDE = [
   ['C','Bright, compact (high)','Beginners, bhajans'],
@@ -331,8 +343,9 @@ function fluteFigHTML(holes, ob){
 function buildExplorer(){
   const wrap = $('#exSwaras'); if(!wrap) return;
   wrap.innerHTML = '';
-  ['S','R','G','m','P','D','N',"S'"].forEach(tok => {
-    const b = el('button', 'swara');
+  ['S','r','R','g','G','m','M','P','d','D','n','N',"S'"].forEach(tok => {
+    const isKomal = ['r','g','d','n'].includes(tok);
+    const b = el('button', 'swara' + (isKomal ? ' komal' : ''));
     b.innerHTML = prettySwara(tok);
     b.addEventListener('click', () => { explorer.tok = tok; renderExplorer(); playExplorer(); });
     wrap.appendChild(b);
@@ -356,7 +369,7 @@ function renderExplorer(){
     : '';
   // highlight active swara button
   const wrap = $('#exSwaras');
-  if(wrap){ Array.from(wrap.children).forEach((b,i) => b.classList.toggle('sel', ['S','R','G','m','P','D','N',"S'"][i] === explorer.tok)); }
+  if(wrap){ Array.from(wrap.children).forEach((b,i) => b.classList.toggle('sel', ['S','r','R','g','G','m','M','P','d','D','n','N',"S'"][i] === explorer.tok)); }
   const semi = tokenToSemi(explorer.tok);
   const saHz = saHzFrom($('#saSelect'), $('#saOct'));
   const f0 = saHz * Math.pow(2, semi/12);
