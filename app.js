@@ -366,7 +366,7 @@ function renderExplorer(){
   const f = fingeringFor(explorer.tok);
   // update finger note text (flute is now drawn in canvas)
   $('#exFingerNote').innerHTML = f
-    ? `<b>${prettySwara(explorer.tok)}</b> = ${f.label} · ${fluteType==='venu'?'Carnatic venu (8-hole)':'bansuri (6-hole)'}`
+    ? `<b>${prettySwara(explorer.tok)}</b> = ${f.label} · ${fluteType==='venu'?'Carnatic venu (8-hole)':'Hindustani (6-hole)'}`
     : '';
   // highlight active swara button
   const wrap = $('#exSwaras');
@@ -395,6 +395,7 @@ function swaraWaveAnim(){
     const holes = f ? f.holes : [];
     const ob    = f ? f.ob : false;
     const nHoles = holes.length; // 6 or 8
+    const harmonic = ob ? 2 : 1; // overblow = 2nd harmonic inside tube
 
     // Layout: flute occupies left ~40%, wave flows right from its open end
     const cy = h * 0.5;
@@ -429,15 +430,15 @@ function swaraWaveAnim(){
     }
     ctx.globalAlpha = 1;
 
-    // standing wave inside flute body
+    // standing wave inside flute body — harmonic count changes with overblow
     const stAmp = fluteH * 0.28;
     ctx.strokeStyle = cJade; ctx.lineWidth = 1.8; ctx.globalAlpha = 0.45;
     ctx.beginPath();
     const bx0 = fluteX0 + fluteLen*0.14, bx1 = fluteX1 - 4;
     for(let x = bx0; x <= bx1; x++){
       const u = (x - bx0) / (bx1 - bx0);
-      const env = Math.sin(Math.PI * u);
-      const y = cy - stAmp * env * Math.cos(t * 2.2);
+      const env = Math.sin(Math.PI * u * harmonic); // 1 half-wave (fund) or 2 (overblow)
+      const y = cy - stAmp * env * Math.cos(t * 2.2 * harmonic);
       x === bx0 ? ctx.moveTo(x,y) : ctx.lineTo(x,y);
     }
     ctx.stroke(); ctx.globalAlpha = 1;
@@ -477,21 +478,22 @@ function swaraWaveAnim(){
     ctx.strokeStyle = `rgba(255,255,255,0.04)`; ctx.lineWidth = 1;
     ctx.beginPath(); ctx.moveTo(waveX0, cy); ctx.lineTo(waveX1, cy); ctx.stroke();
 
-    // travelling wave — wavelength reflects pitch
-    const ratio = Math.pow(2, semi/12);
-    const cycles = 1.4 * ratio;
+    // travelling wave — cycle count and speed scale clearly with pitch
+    // semi 0 (Sa) → ~1.5 cycles; semi 11 (Ni) → ~3.5; overblow adds another octave
+    const baseCycles = 1.5 + (semi / 11) * 2.0;
+    const cycles = baseCycles * harmonic;
+    const speed  = 0.06 + (semi / 11) * 0.06 + (harmonic - 1) * 0.08; // visibly faster for higher notes
     const amp = h * 0.32;
     ctx.strokeStyle = cJade; ctx.lineWidth = 2.6; ctx.beginPath();
     for(let x = waveX0; x <= waveX1; x++){
       const u = (x - waveX0) / (waveX1 - waveX0);
-      // fade in from flute end, fade out at right edge
       const env = Math.min(u * 6, 1) * (1 - u * 0.25);
       const y = cy - amp * env * Math.sin(2 * Math.PI * cycles * u - t);
       x === waveX0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
     }
     ctx.stroke();
 
-    t += reduceMotion ? 0 : 0.10;
+    t += reduceMotion ? 0 : speed;
     raf.ex = requestAnimationFrame(frame);
   }
   frame();

@@ -10,13 +10,13 @@
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
   :root{
-    /* Dark theme — cool slate */
-    --bg:#0f1117;
-    --bg-2:#141720;
-    --panel:#1a1e2e;
-    --panel-2:#20253a;
-    --line:#2a3050;
-    --line-soft:#222840;
+    /* Dark theme — deep navy-black */
+    --bg:#05060b;
+    --bg-2:#080910;
+    --panel:#0b0d16;
+    --panel-2:#10131f;
+    --line:#1c2038;
+    --line-soft:#141828;
     --ink:#e8eaf6;
     --ink-dim:#a0a8c8;
     --ink-mute:#5a6490;
@@ -755,7 +755,7 @@
           <div class="lead-row" style="justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap">
             <h3 style="margin:0">Fingering chart — middle octave</h3>
             <div class="seg" id="fluteToggleTbl">
-              <button class="seg-btn active" data-flute="bansuri">Bansuri · 6-hole</button>
+              <button class="seg-btn active" data-flute="bansuri">Hindustani · 6-hole</button>
               <button class="seg-btn" data-flute="venu">Carnatic venu · 8-hole</button>
             </div>
           </div>
@@ -768,7 +768,7 @@
           <div class="lead-row" style="justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap">
             <h3 style="margin:0">Explore each swara — fingering &amp; wave</h3>
             <div class="seg" id="fluteToggle">
-              <button class="seg-btn active" data-flute="bansuri">Bansuri · 6-hole</button>
+              <button class="seg-btn active" data-flute="bansuri">Hindustani · 6-hole</button>
               <button class="seg-btn" data-flute="venu">Carnatic venu · 8-hole</button>
             </div>
           </div>
@@ -899,7 +899,7 @@
           <div class="field"><label>This flute's Sa</label><select id="tunerKey"></select></div>
           <div class="field"><label>Octave</label><select id="tunerOct"><option>3</option><option selected>4</option><option>5</option></select></div>
           <div class="field"><label>Naming</label><select id="tunerSystem"><option value="carnatic">Carnatic (S R G…)</option><option value="hindustani">Hindustani (Sa Re Ga…)</option></select></div>
-          <div class="field"><label>Flute</label><select id="tunerFlute"><option value="bansuri">Bansuri · 6-hole</option><option value="venu">Carnatic venu · 8-hole</option></select></div>
+          <div class="field"><label>Flute</label><select id="tunerFlute"><option value="bansuri">Hindustani · 6-hole</option><option value="venu">Carnatic venu · 8-hole</option></select></div>
           <button class="btn jade" id="tunerStart">Start listening</button>
           <button class="btn ghost sm" id="tunerStop" disabled>Stop</button>
           <span class="pill"><span class="live-dot" id="liveDot"></span><span id="tunerStatus">Idle</span></span>
