@@ -568,19 +568,17 @@
           </div>
           <p class="muted">Tap a swara to see how to finger it, watch the shape of its sound wave, and hear it on a flute tuned to your Sa above.</p>
           <div class="swara-row" id="exSwaras" style="margin:6px 0 16px"></div>
-          <div class="grid g2">
-            <div class="card">
-              <div class="muted" style="font-size:.8rem;margin-bottom:12px">Finger position — hole 1 nearest the mouth</div>
-              <div class="flute-fig" id="exFlute"></div>
-              <p class="note-small" id="exFingerNote" style="margin-top:12px"></p>
+          <!-- unified flute+wave canvas -->
+          <div class="card" style="padding:16px 20px">
+            <div class="stage" style="aspect-ratio:21/7;min-height:120px">
+              <canvas id="exWave"></canvas>
             </div>
-            <div class="card">
-              <div class="muted" style="font-size:.8rem;margin-bottom:12px">How its sound wave looks (higher swara → shorter wave)</div>
-              <div class="stage" style="aspect-ratio:16/7"><canvas id="exWave"></canvas></div>
-              <div class="lead-row" style="margin-top:12px;justify-content:space-between;gap:10px;flex-wrap:wrap">
-                <span class="pill"><span class="dot jade"></span><span id="exReadout">—</span></span>
-                <button class="btn jade sm" id="exPlay">▶ Hear it</button>
+            <div class="lead-row" style="margin-top:14px;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:center">
+              <div>
+                <span class="pill" style="margin-right:8px"><span class="dot jade"></span><span id="exReadout">—</span></span>
+                <span class="note-small" id="exFingerNote" style="margin:0"></span>
               </div>
+              <button class="btn jade sm" id="exPlay">▶ Hear it</button>
             </div>
           </div>
         </div>

@@ -364,8 +364,7 @@ function playExplorer(){
 }
 function renderExplorer(){
   const f = fingeringFor(explorer.tok);
-  const fig = $('#exFlute'); if(!fig) return;
-  fig.innerHTML = f ? fluteFigHTML(f.holes, f.ob) : '';
+  // update finger note text (flute is now drawn in canvas)
   $('#exFingerNote').innerHTML = f
     ? `<b>${prettySwara(explorer.tok)}</b> = ${f.label} · ${fluteType==='venu'?'Carnatic venu (8-hole)':'bansuri (6-hole)'}`
     : '';
@@ -383,22 +382,116 @@ function swaraWaveAnim(){
   function frame(){
     const {ctx,w,h} = fitCanvas(cv);
     ctx.clearRect(0,0,w,h);
+    const cs = getComputedStyle(document.documentElement);
+    const cPanel  = cs.getPropertyValue('--panel').trim();
+    const cPanel2 = cs.getPropertyValue('--panel-2').trim();
+    const cLine   = cs.getPropertyValue('--line').trim();
+    const cAmber  = cs.getPropertyValue('--amber').trim();
+    const cJade   = cs.getPropertyValue('--jade').trim();
+    const cInkMut = cs.getPropertyValue('--ink-mute').trim();
+
     const semi = tokenToSemi(explorer.tok) || 0;
-    const ratio = Math.pow(2, semi/12);          // higher swara → shorter wavelength
-    const cycles = 1.15 * ratio;                  // visible cycles across the panel
-    const cy = h/2, amp = h*0.34, x0 = w*0.04, x1 = w*0.96;
-    // faint guide line
-    ctx.strokeStyle = 'rgba(255,255,255,.06)'; ctx.lineWidth = 1;
-    ctx.beginPath(); ctx.moveTo(x0,cy); ctx.lineTo(x1,cy); ctx.stroke();
-    // travelling sine whose wavelength reflects the pitch
-    ctx.strokeStyle = '#5cc7a6'; ctx.lineWidth = 2.4; ctx.beginPath();
-    for(let x=x0; x<=x1; x++){
-      const u = (x-x0)/(x1-x0);
-      const y = cy - amp * Math.sin(2*Math.PI*cycles*u - t);
-      x===x0 ? ctx.moveTo(x,y) : ctx.lineTo(x,y);
+    const f = fingeringFor(explorer.tok);
+    const holes = f ? f.holes : [];
+    const ob    = f ? f.ob : false;
+    const nHoles = holes.length; // 6 or 8
+
+    // Layout: flute occupies left ~40%, wave flows right from its open end
+    const cy = h * 0.5;
+    const fluteH = Math.min(h * 0.32, 52);
+    const fluteX0 = w * 0.02;
+    const fluteX1 = w * 0.42;
+    const fluteLen = fluteX1 - fluteX0;
+    const waveX0 = fluteX1;
+    const waveX1 = w * 0.98;
+
+    // ---- Draw flute body ----
+    const grad = ctx.createLinearGradient(0, cy - fluteH/2, 0, cy + fluteH/2);
+    grad.addColorStop(0, cPanel2); grad.addColorStop(1, cPanel);
+    ctx.fillStyle = grad; ctx.strokeStyle = cLine; ctx.lineWidth = 1.5;
+    roundRect(ctx, fluteX0, cy - fluteH/2, fluteLen, fluteH, fluteH/2);
+    ctx.fill(); ctx.stroke();
+
+    // blow hole (cork end, left side)
+    const blowR = fluteH * 0.22;
+    ctx.fillStyle = cAmber; ctx.globalAlpha = 0.9;
+    ctx.beginPath(); ctx.ellipse(fluteX0 + fluteLen*0.10, cy, blowR*0.7, blowR, 0, 0, Math.PI*2); ctx.fill();
+    ctx.globalAlpha = 1;
+
+    // breath particles entering blow hole
+    for(let i = 0; i < 5; i++){
+      const p = ((t * 0.06 + i / 5) % 1);
+      const px = fluteX0 + fluteLen*0.10 - 28 + p * 34;
+      const py = cy + Math.sin(t * 1.8 + i * 1.2) * 4;
+      ctx.globalAlpha = (1 - p) * 0.7;
+      ctx.fillStyle = cJade;
+      ctx.beginPath(); ctx.arc(px, py, 2.2, 0, Math.PI*2); ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+
+    // standing wave inside flute body
+    const stAmp = fluteH * 0.28;
+    ctx.strokeStyle = cJade; ctx.lineWidth = 1.8; ctx.globalAlpha = 0.45;
+    ctx.beginPath();
+    const bx0 = fluteX0 + fluteLen*0.14, bx1 = fluteX1 - 4;
+    for(let x = bx0; x <= bx1; x++){
+      const u = (x - bx0) / (bx1 - bx0);
+      const env = Math.sin(Math.PI * u);
+      const y = cy - stAmp * env * Math.cos(t * 2.2);
+      x === bx0 ? ctx.moveTo(x,y) : ctx.lineTo(x,y);
+    }
+    ctx.stroke(); ctx.globalAlpha = 1;
+
+    // finger holes
+    const holeStart = fluteX0 + fluteLen * 0.26;
+    const holeEnd   = fluteX0 + fluteLen * 0.88;
+    const holeSpacing = (holeEnd - holeStart) / Math.max(nHoles - 1, 1);
+    const holeR = Math.min(fluteH * 0.19, 7);
+    holes.forEach((state, i) => {
+      const hx = holeStart + i * holeSpacing;
+      ctx.beginPath(); ctx.arc(hx, cy, holeR, 0, Math.PI*2);
+      if(state === 'c'){
+        ctx.fillStyle = cAmber; ctx.fill();
+      } else if(state === 'h'){
+        // half-hole: filled left half
+        ctx.fillStyle = cPanel; ctx.fill();
+        ctx.beginPath(); ctx.arc(hx, cy, holeR, -Math.PI/2, Math.PI/2); ctx.lineTo(hx, cy); ctx.closePath();
+        ctx.fillStyle = cAmber; ctx.fill();
+        ctx.beginPath(); ctx.arc(hx, cy, holeR, 0, Math.PI*2);
+        ctx.strokeStyle = cAmber; ctx.lineWidth = 1.2; ctx.stroke();
+      } else {
+        ctx.fillStyle = cPanel; ctx.fill();
+        ctx.strokeStyle = cInkMut; ctx.lineWidth = 1.2; ctx.stroke();
+      }
+    });
+
+    // overblow label
+    if(ob){
+      ctx.fillStyle = cJade; ctx.font = `500 ${Math.max(9,h*0.10)}px var(--mono,monospace)`;
+      ctx.textAlign = 'center';
+      ctx.fillText('↟ overblow', fluteX0 + fluteLen*0.5, cy - fluteH/2 - 6);
+    }
+
+    // ---- Connector: wave flows from open end of flute ----
+    // faint centre guide
+    ctx.strokeStyle = `rgba(255,255,255,0.04)`; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(waveX0, cy); ctx.lineTo(waveX1, cy); ctx.stroke();
+
+    // travelling wave — wavelength reflects pitch
+    const ratio = Math.pow(2, semi/12);
+    const cycles = 1.4 * ratio;
+    const amp = h * 0.32;
+    ctx.strokeStyle = cJade; ctx.lineWidth = 2.6; ctx.beginPath();
+    for(let x = waveX0; x <= waveX1; x++){
+      const u = (x - waveX0) / (waveX1 - waveX0);
+      // fade in from flute end, fade out at right edge
+      const env = Math.min(u * 6, 1) * (1 - u * 0.25);
+      const y = cy - amp * env * Math.sin(2 * Math.PI * cycles * u - t);
+      x === waveX0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
     }
     ctx.stroke();
-    t += reduceMotion ? 0 : 0.12;
+
+    t += reduceMotion ? 0 : 0.10;
     raf.ex = requestAnimationFrame(frame);
   }
   frame();
