@@ -855,6 +855,20 @@ function init(){
   $('#playScaleBtn').addEventListener('click', () =>
     playSequence("S R G m P D N S'", saHzFrom($('#saSelect'), $('#saOct')), 360));
 
+  // theme toggle
+  function applyTheme(light){
+    document.documentElement.classList.toggle('light', light);
+    localStorage.setItem('kuzhal_theme', light ? 'light' : 'dark');
+    const label = light ? 'Dark mode' : 'Light mode';
+    const t1 = $('#themeToggleSide'); if(t1) t1.textContent = label;
+    const t2 = $('#themeToggleTop');  if(t2) t2.textContent = light ? '🌙' : '☀';
+  }
+  const savedTheme = localStorage.getItem('kuzhal_theme');
+  const preferLight = savedTheme ? savedTheme === 'light' : window.matchMedia('(prefers-color-scheme: light)').matches;
+  applyTheme(preferLight);
+  $$('#themeToggleSide, #themeToggleTop').forEach(btn =>
+    btn.addEventListener('click', () => applyTheme(!document.documentElement.classList.contains('light'))));
+
   // global tradition toggle (sidebar + topbar)
   $$('#globalToggleSide .seg-btn, #globalToggleTop .seg-btn').forEach(btn =>
     btn.addEventListener('click', () => setTradition(btn.dataset.tradition)));

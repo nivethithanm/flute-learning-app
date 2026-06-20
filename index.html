@@ -10,20 +10,20 @@
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
   :root{
-    --bg:#16110d;            /* aged-bamboo charcoal */
+    --bg:#16110d;
     --bg-2:#1d1813;
     --panel:#221c16;
     --panel-2:#2a231b;
     --line:#3a2f24;
     --line-soft:#2f261d;
-    --ink:#f3e9da;           /* warm cream */
+    --ink:#f3e9da;
     --ink-dim:#c9bba6;
     --ink-mute:#8f8169;
-    --amber:#e3a948;         /* brass / bamboo */
+    --amber:#e3a948;
     --amber-deep:#b9842f;
-    --jade:#5cc7a6;          /* sound / breath */
+    --jade:#5cc7a6;
     --jade-deep:#39a988;
-    --rose:#d97a66;          /* raga / emphasis */
+    --rose:#d97a66;
     --rad:14px;
     --rad-sm:9px;
     --maxw:1180px;
@@ -32,6 +32,30 @@
     --body:'Plus Jakarta Sans',system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
     --mono:'IBM Plex Mono',ui-monospace,SFMono-Regular,Menlo,monospace;
   }
+  /* Light mode overrides */
+  html.light{
+    --bg:#f5f0e8;
+    --bg-2:#ede7da;
+    --panel:#e8e0d0;
+    --panel-2:#ddd5c2;
+    --line:#c8bda8;
+    --line-soft:#d4c9b5;
+    --ink:#2a1f0e;
+    --ink-dim:#5a4830;
+    --ink-mute:#8a7458;
+    --shadow:0 8px 32px -12px rgba(0,0,0,.18);
+  }
+  html.light body{
+    background:
+      radial-gradient(1100px 600px at 78% -8%, rgba(227,169,72,.10), transparent 60%),
+      radial-gradient(900px 700px at -8% 110%, rgba(92,199,166,.08), transparent 55%),
+      var(--bg);
+  }
+  html.light .side{background:linear-gradient(180deg,var(--bg-2),var(--bg))}
+  html.light .topbar{background:rgba(245,240,232,.88)}
+  html.light .chip-nav{background:rgba(245,240,232,.88)}
+  html.light canvas{filter:none}
+  html.light select,html.light input[type=text],html.light textarea{background:var(--panel);color:var(--ink)}
 
   *{box-sizing:border-box}
   html{scroll-behavior:smooth}
@@ -233,6 +257,11 @@
     .scrim.show{display:block}
     .wrap{padding-top:34px}
   }
+  /* theme toggle button */
+  .theme-btn{font-family:var(--body);font-size:.78rem;font-weight:600;color:var(--ink-mute);background:var(--panel);border:1px solid var(--line);border-radius:20px;padding:5px 12px;cursor:pointer;transition:color .15s,border-color .15s;width:100%;margin-bottom:8px;text-align:left;white-space:nowrap}
+  .theme-btn:hover{color:var(--ink);border-color:var(--amber-deep)}
+  .theme-btn-top{width:auto;margin:0;font-size:.8rem;padding:5px 10px;flex:0 0 auto}
+
   /* sticky chip nav */
   .chip-nav{
     position:sticky;top:0;z-index:28;
@@ -294,6 +323,7 @@
       <a href="#tuner" data-route="tuner"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M12 3v3M5 12H2M22 12h-3M12 12l5-3"/><circle cx="12" cy="12" r="9"/></svg>Tuner &amp; transcribe</a>
     </nav>
     <div class="side-foot">
+      <button class="theme-btn" id="themeToggleSide" aria-label="Toggle light/dark mode">Light mode</button>
       <div class="global-tradition" id="globalTraditionSide">
         <span class="trad-label">Tradition</span>
         <div class="seg" id="globalToggleSide">
@@ -310,6 +340,8 @@
   <main class="main">
     <div class="topbar">
       <a class="brand" href="#home"><svg class="mark" viewBox="0 0 40 40" fill="none" aria-hidden="true"><rect x="3" y="15" width="34" height="10" rx="5" fill="#2a231b" stroke="#b9842f" stroke-width="1.4"/><circle cx="11" cy="20" r="2" fill="#e3a948"/><circle cx="18" cy="20" r="2" fill="#e3a948"/><circle cx="25" cy="20" r="2" fill="#e3a948"/></svg><span><b>Kuzhal</b></span></a>
+      <button class="theme-btn theme-btn-top" id="themeToggleTop" aria-label="Toggle light/dark mode">☀</button>
+
       <div class="seg seg-sm" id="globalToggleTop">
         <button class="seg-btn active" data-tradition="carnatic">Carnatic</button>
         <button class="seg-btn" data-tradition="hindustani">Hindustani</button>
