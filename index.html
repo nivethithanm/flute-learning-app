@@ -262,6 +262,17 @@
     .scrim.show{display:block}
     .wrap{padding-top:34px}
   }
+  /* sound game */
+  .sgame-holes{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:14px}
+  .sgame-hole{width:42px;height:42px;border-radius:50%;border:2px solid var(--ink-mute);background:var(--panel);cursor:pointer;display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:.72rem;color:var(--ink-mute);transition:background .15s,border-color .15s,color .15s;position:relative}
+  .sgame-hole.closed{background:var(--amber);border-color:var(--amber-deep);color:#1a1208}
+  .sgame-hole:hover{border-color:var(--amber-deep)}
+  .sgame-readout{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-top:4px}
+  .sgame-result{font-family:var(--mono);font-size:.85rem;font-weight:600;margin-left:4px;transition:color .2s}
+  .sgame-result.win{color:var(--jade)}
+  .sgame-result.close{color:var(--amber)}
+  .sgame-result.off{color:var(--rose)}
+
   /* lesson stepper */
   .lesson-wrap{display:flex;flex-direction:column;gap:16px}
   .lesson-dots{display:flex;gap:8px;justify-content:center}
@@ -626,63 +637,82 @@
       <!-- ============ SOUND & WAVES ============ -->
       <section class="view" id="view-sound" data-view="sound">
         <p class="eyebrow jade">02 · Sound &amp; waves</p>
-        <h1 class="title">A flute is a tuned column of moving air.</h1>
-        <p class="lede">Blow across the hole and the air inside the tube vibrates as a standing wave. The length of that air column decides the pitch — and your fingers change that length.</p>
+        <h1 class="title">Air in, sound out — here's how.</h1>
+        <p class="lede">Watch a breath become a pitch. The figure below blows across the hole; the air column vibrates as a standing wave; the wave radiates as sound. Drag the slider to change pitch.</p>
 
-        <div class="stage block" style="aspect-ratio:21/8">
+        <!-- Animated figure + pipe canvas -->
+        <div class="stage block" style="aspect-ratio:21/9;min-height:160px">
           <canvas id="pipeWave"></canvas>
         </div>
         <div class="controls card" style="margin-top:-6px">
           <div class="field" style="flex:1;min-width:220px">
-            <label>Air-column length (effective)</label>
+            <label>Tube length → pitch <span class="muted" style="font-weight:400">(shorter = higher)</span></label>
             <input type="range" id="pipeLen" min="0.18" max="0.66" step="0.005" value="0.45">
           </div>
-          <div class="field" style="min-width:150px">
-            <label>Harmonic (overblow)</label>
-            <select id="pipeHarm"><option value="1">1 · fundamental</option><option value="2">2 · octave up</option><option value="3">3 · twelfth</option></select>
+          <div class="field" style="min-width:160px">
+            <label>Overblow</label>
+            <select id="pipeHarm">
+              <option value="1">1 · fundamental</option>
+              <option value="2">2 · octave up (blow harder)</option>
+              <option value="3">3 · twelfth</option>
+            </select>
           </div>
           <div class="pill"><span class="dot jade"></span><span id="pipeReadout">—</span></div>
         </div>
 
-        <div class="grid g2 block">
-          <div class="card">
-            <h3>Pitch, loudness, timbre</h3>
-            <dl class="kv">
-              <dt>Pitch</dt><dd>How fast the air vibrates — its <b>frequency</b> in hertz (Hz). Faster = higher.</dd>
-              <dt>Loudness</dt><dd>How big the vibration is — its <b>amplitude</b>. Harder breath, louder note.</dd>
-              <dt>Timbre</dt><dd>The blend of <b>harmonics</b> riding on the fundamental — why a flute sounds like a flute.</dd>
-            </dl>
+        <!-- Three key facts as small cards -->
+        <div class="grid g3 block">
+          <div class="card" style="text-align:center;padding:18px 14px">
+            <div style="font-size:1.8rem;margin-bottom:6px">🎵</div>
+            <h4 style="font-size:.95rem;margin-bottom:6px">Pitch = frequency</h4>
+            <p class="muted" style="font-size:.84rem;margin:0">Faster vibration = higher note. The formula: <span style="font-family:var(--mono);color:var(--amber)">f = v / (2L)</span></p>
           </div>
-          <div class="card">
-            <h3>Why the flute is an "open pipe"</h3>
-            <p class="muted">Air can move freely at both the blowing hole and the open end, so both act as pressure "anti-nodes." The lowest standing wave that fits has a half-wavelength equal to the tube length:</p>
-            <p class="mono" style="font-family:var(--mono);color:var(--amber);font-size:1.05rem;margin:6px 0">f = v / (2L)</p>
-            <p class="note-small">v ≈ 343 m/s (speed of sound in warm air). Halve the effective length and the pitch jumps an octave — exactly what overblowing does.</p>
+          <div class="card" style="text-align:center;padding:18px 14px">
+            <div style="font-size:1.8rem;margin-bottom:6px">🌬️</div>
+            <h4 style="font-size:.95rem;margin-bottom:6px">Length = pitch</h4>
+            <p class="muted" style="font-size:.84rem;margin:0">Open a hole → shorter column → higher note. Close all holes → longest column → lowest note.</p>
+          </div>
+          <div class="card" style="text-align:center;padding:18px 14px">
+            <div style="font-size:1.8rem;margin-bottom:6px">💨</div>
+            <h4 style="font-size:.95rem;margin-bottom:6px">Overblow = octave</h4>
+            <p class="muted" style="font-size:.84rem;margin:0">Same fingering + faster air = 2nd harmonic = one octave up. That's how the upper register works.</p>
           </div>
         </div>
 
+        <!-- Build-the-note game -->
         <div class="block">
-          <h3>How each note "travels" down the tube</h3>
-          <p class="muted">Opening a finger hole lets the air column end early there, shortening the effective length and raising the pitch. So the note isn't really moving — you're resizing the resonator. The table shows the idea for a flute whose Sa sits around 440&nbsp;Hz.</p>
-          <div class="scroll-x card">
+          <div class="lead-row" style="justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:10px">
+            <h3 style="margin:0">🎮 Build the note — click holes to open/close</h3>
+            <button class="btn sm" id="soundGameReset">Reset</button>
+          </div>
+          <p class="muted">Each open hole shortens the air column and raises the pitch. Try to match the target note shown in gold.</p>
+          <div class="card" style="padding:20px">
+            <div class="sgame-row">
+              <!-- holes -->
+              <div class="sgame-holes" id="sgameHoles"></div>
+            </div>
+            <div class="sgame-readout">
+              <span class="pill"><span class="dot jade"></span><span id="sgameHz">—</span></span>
+              <span class="pill" style="margin-left:8px"><span class="dot" style="background:var(--amber)"></span><span id="sgameTarget">Target: —</span></span>
+              <span id="sgameResult" class="sgame-result"></span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Travel table (collapsed) -->
+        <details class="card block">
+          <summary style="cursor:pointer;font-weight:600;list-style:none;display:flex;justify-content:space-between;align-items:center">
+            Frequency &amp; wavelength for each swara
+            <span style="font-size:.8rem;color:var(--ink-mute)">tap to expand ▾</span>
+          </summary>
+          <div class="scroll-x" style="margin-top:14px">
             <table class="tbl">
               <thead><tr><th>Swara</th><th>Frequency (Hz)</th><th>Effective length</th><th>Wavelength</th></tr></thead>
               <tbody id="travelTable"></tbody>
             </table>
           </div>
-          <p class="note-small">Equal-tempered, A4 = 440 Hz. Real flutes use end-corrections and slightly different tunings, but the relationship — shorter column, higher pitch — always holds.</p>
-        </div>
-
-        <div class="grid g2 block">
-          <div class="card">
-            <h3>Harmonics &amp; octaves</h3>
-            <p class="muted" style="margin:0">Blow a little harder and faster and the same fingering jumps to the 2nd harmonic — an octave up. This is how a flute reaches its upper register without extra holes. The 3rd harmonic is an octave-plus-a-fifth.</p>
-          </div>
-          <div class="card">
-            <h3>Cents: measuring "in tune"</h3>
-            <p class="muted" style="margin:0">An octave splits into 1200 <b>cents</b>; a semitone is 100. The tuner shows how many cents sharp or flat you are. Inside about ±5 cents sounds locked-in to most ears.</p>
-          </div>
-        </div>
+          <p class="note-small">Equal-tempered, A4 = 440 Hz. Real flutes use end-corrections — the relationship holds but exact numbers vary by flute.</p>
+        </details>
       </section>
 
       <!-- ============ NOTATION & FINGERING ============ -->

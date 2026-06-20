@@ -705,27 +705,112 @@ function pipeAnim(){
   function frame(){
     const {ctx,w,h} = fitCanvas(cv);
     ctx.clearRect(0,0,w,h);
-    const len = parseFloat($('#pipeLen').value);     // 0.18..0.66 m effective
-    const harm = parseInt($('#pipeHarm').value,10);
-    const f = (343/(2*len))*harm;
-    const cy = h/2;
-    const x0 = w*0.06, x1 = x0 + (w*0.88)*(len/0.66);
-    // pipe walls
     const ps = getComputedStyle(document.documentElement);
-    ctx.strokeStyle = ps.getPropertyValue('--line').trim() || '#2a3050'; ctx.lineWidth = 2;
-    ctx.beginPath(); ctx.moveTo(x0, cy - h*0.32); ctx.lineTo(x1, cy - h*0.32);
-    ctx.moveTo(x0, cy + h*0.32); ctx.lineTo(x1, cy + h*0.32); ctx.stroke();
-    // animated standing wave
-    const amp = h*0.27;
-    ctx.lineWidth = 2.4; ctx.strokeStyle = ps.getPropertyValue('--jade').trim() || '#34d399';
-    drawWave(ctx, x0, x1, cy, amp, harm, t, 1);
-    ctx.globalAlpha=.35; drawWave(ctx, x0, x1, cy, amp, harm, t+Math.PI, 1); ctx.globalAlpha=1;
-    // nodes
-    ctx.fillStyle = ps.getPropertyValue('--amber').trim() || '#f0b429';
-    for(let k=1;k<harm;k++){ const nx = x0 + (x1-x0)*(k/harm); ctx.beginPath(); ctx.arc(nx, cy, 3.5, 0, 7); ctx.fill(); }
+    const cLine   = ps.getPropertyValue('--line').trim();
+    const cPanel  = ps.getPropertyValue('--panel').trim();
+    const cPanel2 = ps.getPropertyValue('--panel-2').trim();
+    const cJade   = ps.getPropertyValue('--jade').trim();
+    const cAmber  = ps.getPropertyValue('--amber').trim();
+    const cInkD   = ps.getPropertyValue('--ink-dim').trim();
+    const cInkMut = ps.getPropertyValue('--ink-mute').trim();
+
+    const len  = parseFloat($('#pipeLen').value);
+    const harm = parseInt($('#pipeHarm').value, 10);
+    const f    = (343 / (2 * len)) * harm;
     const midi = midiFromFreq(f);
-    $('#pipeReadout').textContent = `${f.toFixed(0)} Hz ≈ ${noteName(midi)}  ·  L ${(len*100).toFixed(0)} cm`;
-    t += reduceMotion ? 0 : 0.06;
+
+    // Layout: figure on left ~18%, flute body center, wave radiates right
+    const figX = w * 0.05, figCy = h * 0.5;
+    const fluteH = Math.min(h * 0.28, 38);
+    const fluteX0 = w * 0.16;
+    const fluteX1 = fluteX0 + (w * 0.60) * (len / 0.66);
+    const waveX0  = fluteX1;
+    const waveX1  = w * 0.98;
+
+    // ---- Stick figure ----
+    const figR = Math.min(h * 0.10, 18);
+    const figTop = figCy - figR * 3.5;
+    // head
+    ctx.strokeStyle = cInkD; ctx.lineWidth = 1.8; ctx.fillStyle = cPanel2;
+    ctx.beginPath(); ctx.arc(figX, figTop, figR, 0, Math.PI*2); ctx.fill(); ctx.stroke();
+    // body
+    const torsoBot = figTop + figR * 4.5;
+    ctx.beginPath(); ctx.moveTo(figX, figTop + figR); ctx.lineTo(figX, torsoBot); ctx.stroke();
+    // legs
+    ctx.beginPath(); ctx.moveTo(figX, torsoBot); ctx.lineTo(figX - figR*1.1, torsoBot + figR*2.2); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(figX, torsoBot); ctx.lineTo(figX + figR*0.6, torsoBot + figR*2.2); ctx.stroke();
+    // arm holding flute (right arm → flute start)
+    const armY = figTop + figR * 2.2;
+    ctx.beginPath(); ctx.moveTo(figX, armY); ctx.lineTo(fluteX0, h * 0.5); ctx.stroke();
+    // left arm (supports flute further along)
+    ctx.beginPath(); ctx.moveTo(figX, armY + figR*0.6); ctx.lineTo(fluteX0 + (fluteX1-fluteX0)*0.35, h * 0.5); ctx.stroke();
+    // lips → blow hole breath particle direction
+    const lipsX = figX + figR * 0.8, lipsY = figTop + figR * 0.1;
+    ctx.fillStyle = cAmber; ctx.globalAlpha = 0.7;
+    ctx.beginPath(); ctx.ellipse(lipsX, lipsY, figR*0.5, figR*0.3, 0, 0, Math.PI*2); ctx.fill();
+    ctx.globalAlpha = 1;
+
+    // Breath particles: lips → blow hole
+    const bhX = fluteX0 + 8, bhY = h * 0.5;
+    for(let i = 0; i < 6; i++){
+      const p = ((t * 0.07 + i / 6) % 1);
+      const px = lipsX + (bhX - lipsX) * p + (Math.random()-0.5)*3;
+      const py = lipsY + (bhY - lipsY) * p;
+      ctx.globalAlpha = (1 - p) * 0.8;
+      ctx.fillStyle = cJade;
+      ctx.beginPath(); ctx.arc(px, py, 2.5, 0, Math.PI*2); ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+
+    // ---- Flute body ----
+    const grad = ctx.createLinearGradient(0, h*0.5 - fluteH/2, 0, h*0.5 + fluteH/2);
+    grad.addColorStop(0, cPanel2); grad.addColorStop(1, cPanel);
+    ctx.fillStyle = grad; ctx.strokeStyle = cLine; ctx.lineWidth = 1.4;
+    roundRect(ctx, fluteX0, h*0.5 - fluteH/2, fluteX1 - fluteX0, fluteH, fluteH/2);
+    ctx.fill(); ctx.stroke();
+
+    // blow hole on flute
+    ctx.fillStyle = cAmber; ctx.globalAlpha = 0.85;
+    ctx.beginPath(); ctx.ellipse(fluteX0 + 12, h*0.5, fluteH*0.25, fluteH*0.18, 0, 0, Math.PI*2); ctx.fill();
+    ctx.globalAlpha = 1;
+
+    // standing wave inside flute
+    const stAmp = fluteH * 0.30;
+    ctx.strokeStyle = cJade; ctx.lineWidth = 1.8; ctx.globalAlpha = 0.5;
+    drawWave(ctx, fluteX0 + 18, fluteX1 - 4, h*0.5, stAmp, harm, t * 2.2, 1);
+    ctx.globalAlpha = 1;
+
+    // node dots inside
+    ctx.fillStyle = cAmber;
+    for(let k = 1; k < harm; k++){
+      const nx = fluteX0 + 18 + (fluteX1 - fluteX0 - 22) * (k / harm);
+      ctx.beginPath(); ctx.arc(nx, h*0.5, 3, 0, Math.PI*2); ctx.fill();
+    }
+
+    // ---- Radiating wave from open end ----
+    // faint centre line
+    ctx.strokeStyle = 'rgba(255,255,255,0.04)'; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(waveX0, h*0.5); ctx.lineTo(waveX1, h*0.5); ctx.stroke();
+
+    const wAmp = h * 0.35;
+    ctx.strokeStyle = cJade; ctx.lineWidth = 2.6; ctx.beginPath();
+    const wCycles = 1.5 * Math.pow(2, Math.log2(len/0.45) * -1); // more cycles for shorter tube
+    for(let x = waveX0; x <= waveX1; x++){
+      const u = (x - waveX0) / (waveX1 - waveX0);
+      const env = Math.min(u * 5, 1) * (1 - u * 0.3);
+      const y = h*0.5 - wAmp * env * Math.sin(2 * Math.PI * wCycles * u - t);
+      x === waveX0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+    }
+    ctx.stroke();
+
+    // frequency label at wave end
+    ctx.fillStyle = cAmber; ctx.font = `600 ${Math.max(11, h*0.09)}px var(--mono,monospace)`;
+    ctx.textAlign = 'right';
+    ctx.fillText(`${f.toFixed(0)} Hz · ${noteName(midi)}`, waveX1 - 4, h*0.5 - wAmp * 0.4 - 8);
+    ctx.textAlign = 'left';
+
+    $('#pipeReadout').textContent = `${f.toFixed(0)} Hz ≈ ${noteName(midi)}  ·  tube ${(len*100).toFixed(0)} cm`;
+    t += reduceMotion ? 0 : 0.055;
     raf.pipe = requestAnimationFrame(frame);
   }
   frame();
@@ -1013,6 +1098,49 @@ function init(){
   $('#hamb').addEventListener('click', openMenu);
   $('#scrim').addEventListener('click', closeMenu);
   $$('#nav a').forEach(a => a.addEventListener('click', closeMenu));
+
+  // Build-the-Note game (sound page)
+  const GAME_SWARAS = ['S','R','G','m','P','D','N'];
+  const GAME_SEMIS  = [0,2,4,5,7,9,11];
+  const GAME_LENGTHS= [0.66,0.58,0.52,0.49,0.44,0.39,0.35]; // approx effective lengths
+  let gameHoles = [false,false,false,false,false,false]; // false=open, true=closed
+  let gameTarget = 0; // index into GAME_SWARAS
+  function newGameTarget(){ gameTarget = Math.floor(Math.random() * GAME_SWARAS.length); updateGameTarget(); }
+  function updateGameTarget(){
+    const el = $('#sgameTarget'); if(el) el.textContent = `Target: ${GAME_SWARAS[gameTarget]}`;
+  }
+  function renderGameHoles(){
+    const wrap = $('#sgameHoles'); if(!wrap) return;
+    wrap.innerHTML = '';
+    gameHoles.forEach((closed, i) => {
+      const btn = el('button', 'sgame-hole' + (closed ? ' closed' : ''));
+      btn.textContent = i + 1;
+      btn.title = closed ? 'closed — tap to open' : 'open — tap to close';
+      btn.addEventListener('click', () => { gameHoles[i] = !gameHoles[i]; renderGameHoles(); checkGame(); });
+      wrap.appendChild(btn);
+    });
+  }
+  function checkGame(){
+    // count open holes from right = which note we're playing
+    let firstOpen = -1;
+    for(let i = gameHoles.length - 1; i >= 0; i--){ if(!gameHoles[i]){ firstOpen = i; break; } }
+    // all closed = Sa (lowest)
+    const noteIdx = firstOpen === -1 ? 0 : Math.min(firstOpen + 1, GAME_SWARAS.length - 1);
+    const el = $('#sgameHz'); if(el) el.textContent = GAME_SWARAS[noteIdx];
+    const res = $('#sgameResult'); if(!res) return;
+    if(noteIdx === gameTarget){
+      res.textContent = '✓ Correct!'; res.className = 'sgame-result win';
+      setTimeout(newGameTarget, 1200);
+    } else {
+      const diff = GAME_SEMIS[noteIdx] - GAME_SEMIS[gameTarget];
+      res.textContent = diff < 0 ? '↑ Too low — open more holes' : '↓ Too high — close more holes';
+      res.className = 'sgame-result ' + (Math.abs(diff) <= 2 ? 'close' : 'off');
+    }
+  }
+  if($('#sgameHoles')){
+    renderGameHoles(); newGameTarget();
+    $('#soundGameReset').addEventListener('click', () => { gameHoles = [false,false,false,false,false,false]; renderGameHoles(); newGameTarget(); });
+  }
 
   // lesson stepper (basics page)
   let lessonStep = 0;
