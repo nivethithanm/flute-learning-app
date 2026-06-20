@@ -397,6 +397,26 @@ function setFluteType(t){
   if(tuner.lastIdx != null) renderTunerFinger(tuner.lastIdx);
 }
 
+function setTradition(tradition){
+  // carnatic → bansuri + carnatic naming; hindustani → bansuri + hindustani naming
+  // (venu is still selectable per-page via the local toggles)
+  swaraSystem = tradition;
+  if(tradition === 'carnatic'){
+    setFluteType('bansuri');
+  } else {
+    setFluteType('bansuri');
+    swaraSystem = 'hindustani';
+  }
+  // sync both global toggle instances
+  $$('#globalToggleSide .seg-btn, #globalToggleTop .seg-btn').forEach(b =>
+    b.classList.toggle('active', b.dataset.tradition === tradition));
+  // sync tuner naming select if present
+  const sysSel = $('#tunerSystem');
+  if(sysSel) sysSel.value = tradition;
+  // rebuild swara board labels (they use swaraSystem indirectly via tuner label)
+  buildSwaraBoard();
+}
+
 /* ----- SOUND / travel table ----- */
 function buildTravelTable(){
   const v = 343; const tb = $('#travelTable'); tb.innerHTML = '';
@@ -821,6 +841,10 @@ function init(){
   $('#tunerKey').addEventListener('change', e => syncKeySelects(e.target));
   $('#playScaleBtn').addEventListener('click', () =>
     playSequence("S R G m P D N S'", saHzFrom($('#saSelect'), $('#saOct')), 360));
+
+  // global tradition toggle (sidebar + topbar)
+  $$('#globalToggleSide .seg-btn, #globalToggleTop .seg-btn').forEach(btn =>
+    btn.addEventListener('click', () => setTradition(btn.dataset.tradition)));
 
   // mobile menu
   $('#hamb').addEventListener('click', openMenu);

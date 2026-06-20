@@ -165,6 +165,7 @@
 
   /* segmented toggle */
   .seg{display:inline-flex;background:var(--panel-2);border:1px solid var(--line);border-radius:11px;padding:3px;gap:3px}
+  .global-tradition .seg{display:flex}
   .seg-btn{font-family:var(--body);font-size:.8rem;font-weight:600;color:var(--ink-dim);background:transparent;border:0;padding:7px 13px;border-radius:8px;cursor:pointer;transition:background .15s,color .15s}
   .seg-btn:hover{color:var(--ink)}
   .seg-btn.active{background:linear-gradient(180deg,var(--amber),var(--amber-deep));color:#1a1208}
@@ -232,6 +233,14 @@
     .scrim.show{display:block}
     .wrap{padding-top:34px}
   }
+  /* global tradition toggle */
+  .global-tradition{display:flex;flex-direction:column;gap:6px;margin-bottom:12px;padding:10px;background:var(--panel-2);border:1px solid var(--line);border-radius:var(--rad-sm)}
+  .trad-label{font-family:var(--mono);font-size:.64rem;letter-spacing:.18em;text-transform:uppercase;color:var(--ink-mute)}
+  .global-tradition .seg{width:100%}
+  .global-tradition .seg-btn{flex:1;text-align:center;font-size:.78rem;padding:6px 8px}
+  .seg-sm .seg-btn{font-size:.7rem;padding:5px 9px}
+  [data-tradition="hindustani"].seg-btn.active{background:linear-gradient(180deg,var(--jade),var(--jade-deep));color:#062018}
+
   @media(prefers-reduced-motion:reduce){
     *{animation:none!important;transition:none!important;scroll-behavior:auto!important}
   }
@@ -262,6 +271,13 @@
       <a href="#tuner" data-route="tuner"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M12 3v3M5 12H2M22 12h-3M12 12l5-3"/><circle cx="12" cy="12" r="9"/></svg>Tuner &amp; transcribe</a>
     </nav>
     <div class="side-foot">
+      <div class="global-tradition" id="globalTraditionSide">
+        <span class="trad-label">Tradition</span>
+        <div class="seg" id="globalToggleSide">
+          <button class="seg-btn active" data-tradition="carnatic">Carnatic</button>
+          <button class="seg-btn" data-tradition="hindustani">Hindustani</button>
+        </div>
+      </div>
       Built for learners of Carnatic &amp; Hindustani flute. Works offline once loaded.
     </div>
   </aside>
@@ -271,6 +287,10 @@
   <main class="main">
     <div class="topbar">
       <a class="brand" href="#home"><svg class="mark" viewBox="0 0 40 40" fill="none" aria-hidden="true"><rect x="3" y="15" width="34" height="10" rx="5" fill="#2a231b" stroke="#b9842f" stroke-width="1.4"/><circle cx="11" cy="20" r="2" fill="#e3a948"/><circle cx="18" cy="20" r="2" fill="#e3a948"/><circle cx="25" cy="20" r="2" fill="#e3a948"/></svg><span><b>Kuzhal</b></span></a>
+      <div class="seg seg-sm" id="globalToggleTop">
+        <button class="seg-btn active" data-tradition="carnatic">Carnatic</button>
+        <button class="seg-btn" data-tradition="hindustani">Hindustani</button>
+      </div>
       <button class="hamb" id="hamb" aria-label="Open menu">☰</button>
     </div>
     <div class="wrap">
