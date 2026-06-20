@@ -171,51 +171,53 @@ const HIND = [
   ['Ma','shuddha',5],['Ma','tivra',6],['Pa','shuddha',7],['Dha','komal',8],['Dha','shuddha',9],
   ['Ni','komal',10],['Ni','shuddha',11],
 ];
-// 6-hole Hindustani bansuri. H1=nearest blow hole, H6=farthest (near open end).
-// Sa = all holes closed (longest column = lowest pitch).
-// Scale ascends by opening holes from H6 toward H1 — each open hole shortens
-// the resonating column and raises the pitch. All open = Ni (highest lower-register note).
-// Upper register: same fingerings + overblow (2nd harmonic = one octave up).
-// Pa is a lower-register note (H3-H6 open, no overblow) — NOT all-closed+overblow.
+// 6-hole Hindustani bansuri — standard middle-octave (madhya saptak) fingering.
+// H1=nearest blow hole, H6=farthest (near open end).
+// Lower half (Sa→tivra Ma): open holes from H3 toward H1 as pitch rises.
+//   Sa = H1-H3 closed, H4-H6 open. Tivra Ma = all open.
+// Upper half (Pa→Ni) + Taar Sa: all require overblow. Pa = all 6 closed + strong blow;
+//   then open H6 toward H4 for Dha/Ni. Taar Sa = same as Sa fingering + overblow.
 const FINGER = [
-  ['S',  ['c','c','c','c','c','c'], false, 'Sa — all holes closed'],
-  ['r',  ['c','c','c','c','c','h'], false, 'komal Re — H6 half-open'],
-  ['R',  ['c','c','c','c','c','o'], false, 'shuddha Re — H6 open'],
-  ['g',  ['c','c','c','c','h','o'], false, 'komal Ga — H5 half, H6 open'],
-  ['G',  ['c','c','c','c','o','o'], false, 'shuddha Ga — H5,H6 open'],
-  ['m',  ['c','c','c','o','o','o'], false, 'shuddha Ma — H4,H5,H6 open'],
-  ['M',  ['c','o','c','c','o','o'], false, 'tivra Ma — cross-finger (H2 open, H3,H4 closed, H5,H6 open)'],
-  ['P',  ['c','c','o','o','o','o'], false, 'Pa — H3,H4,H5,H6 open'],
-  ['d',  ['c','h','o','o','o','o'], false, 'komal Dha — H2 half, H3-H6 open'],
-  ['D',  ['c','o','o','o','o','o'], false, 'shuddha Dha — H2-H6 open'],
-  ['n',  ['h','o','o','o','o','o'], false, 'komal Ni — H1 half, H2-H6 open'],
-  ['N',  ['o','o','o','o','o','o'], false, 'shuddha Ni — all holes open'],
-  ["S'", ['c','c','c','c','c','c'], true,  'upper Sa — all closed + overblow'],
+  ['S',  ['c','c','c','o','o','o'], false, 'Sa — H1,H2,H3 closed'],
+  ['r',  ['c','c','h','o','o','o'], false, 'komal Re — H3 half-open'],
+  ['R',  ['c','c','o','o','o','o'], false, 'shuddha Re — H3 open'],
+  ['g',  ['c','h','o','o','o','o'], false, 'komal Ga — H2 half-open'],
+  ['G',  ['c','o','o','o','o','o'], false, 'shuddha Ga — H2 open'],
+  ['m',  ['h','o','o','o','o','o'], false, 'shuddha Ma — H1 half-open'],
+  ['M',  ['o','o','o','o','o','o'], false, 'tivra Ma — all open'],
+  ['P',  ['c','c','c','c','c','c'], true,  'Pa — all closed + overblow'],
+  ['d',  ['c','c','c','c','c','h'], true,  'komal Dha — H6 half + overblow'],
+  ['D',  ['c','c','c','c','c','o'], true,  'shuddha Dha — H6 open + overblow'],
+  ['n',  ['c','c','c','c','h','o'], true,  'komal Ni — H5 half + overblow'],
+  ['N',  ['c','c','c','c','o','o'], true,  'shuddha Ni — H5,H6 open + overblow'],
+  ["S'", ['c','c','c','o','o','o'], true,  'upper Sa — same as Sa + overblow'],
 ];
-// Carnatic venu (Pullanguzhal) — 8-hole layout.
-// H1-H6 = main finger holes (same ascending logic as bansuri: open from H6 toward H1).
-// H7 = lower auxiliary hole (gives mandra Pa extension); stays closed in madhya sthayi.
-// H8 = thumb/cork-end hole; stays closed throughout.
-// Based on standard Carnatic teaching (ref: Anubodh fingering chart).
+// Carnatic venu (Pullanguzhal) — 8-hole Mali-style fingering, middle octave.
+// H1=nearest blow hole, H8=farthest (near open end).
+// Lower half (Sa→antara Ga): H1,H2 are the working holes; open from H2 toward H1.
+//   Sa = H1,H2 closed. G3 (antara Ga) = all open.
+// Upper half (suddha Ma→kakali Ni) + Taar Sa: all require overblow.
+//   M1 = H1-H7 closed, H8 open; progressively open from H7 toward H3.
+//   Taar Sa = H1,H2 closed + overblow (same fingering as Sa).
 const FINGER_VENU = [
-  ['S',  ['c','c','c','c','c','c','c','c'], false, 'Sa — all holes closed (madhya sthayi)'],
-  ['r',  ['c','c','c','c','c','h','c','c'], false, 'komal Ri — H6 half-open'],
-  ['R',  ['c','c','c','c','c','o','c','c'], false, 'shuddha Ri — H6 open'],
-  ['g',  ['c','c','c','c','h','o','c','c'], false, 'sadharana Ga — H5 half, H6 open'],
-  ['G',  ['c','c','c','c','o','o','c','c'], false, 'antara Ga — H5,H6 open'],
-  ['m',  ['c','c','c','o','o','o','c','c'], false, 'shuddha Ma — H4,H5,H6 open'],
-  ['M',  ['c','o','c','c','o','o','c','c'], false, 'prati Ma — cross-finger (H2 open, H3,H4 closed, H5,H6 open)'],
-  ['P',  ['c','c','o','o','o','o','c','c'], false, 'Pa — H3,H4,H5,H6 open'],
-  ['d',  ['c','h','o','o','o','o','c','c'], false, 'komal Da — H2 half, H3-H6 open'],
-  ['D',  ['c','o','o','o','o','o','c','c'], false, 'shuddha Da — H2-H6 open'],
-  ['n',  ['h','o','o','o','o','o','c','c'], false, 'komal Ni — H1 half, H2-H6 open'],
-  ['N',  ['o','o','o','o','o','o','c','c'], false, 'shuddha Ni — H1-H6 open'],
-  ["S'", ['c','c','c','c','c','c','c','c'], true,  'upper Sa — all closed + overblow'],
+  ['S',  ['c','c','o','o','o','o','o','o'], false, 'Sa — H1,H2 closed'],
+  ['r',  ['c','h','o','o','o','o','o','o'], false, 'suddha Ri — H2 half-open'],
+  ['R',  ['c','o','o','o','o','o','o','o'], false, 'chatusruthi Ri — H2 open'],
+  ['g',  ['h','o','o','o','o','o','o','o'], false, 'sadharana Ga — H1 half-open'],
+  ['G',  ['o','o','o','o','o','o','o','o'], false, 'antara Ga — all open'],
+  ['m',  ['c','c','c','c','c','c','c','o'], true,  'suddha Ma — H7 open + overblow'],
+  ['M',  ['c','c','c','c','c','c','o','o'], true,  'prati Ma — H6,H7 open + overblow'],
+  ['P',  ['c','c','c','c','c','o','o','o'], true,  'Pa — H5,H6,H7 open + overblow'],
+  ['d',  ['c','c','c','c','h','o','o','o'], true,  'suddha Da — H5 half + overblow'],
+  ['D',  ['c','c','c','c','o','o','o','o'], true,  'chatusruthi Da — H4-H7 open + overblow'],
+  ['n',  ['c','c','c','h','o','o','o','o'], true,  'kaisika Ni — H4 half + overblow'],
+  ['N',  ['c','c','c','o','o','o','o','o'], true,  'kakali Ni — H3-H7 open + overblow'],
+  ["S'", ['c','c','o','o','o','o','o','o'], true,  'upper Sa — H1,H2 closed + overblow'],
 ];
 // which charted token each pitch-class maps to for tuner fingering display
 // idx: 0 S, 1 r, 2 R, 3 g, 4 G, 5 m, 6 M, 7 P, 8 d, 9 D, 10 n, 11 N
 const FING_BASE = ['S','r','R','g','G','m','M','P','d','D','n','N'];
-const FING_ALT  = [null,'half-hole 3',null,'half-hole 2',null,null,'half-hole 1',null,'half-hole 6',null,'half-hole 5',null];
+const FING_ALT  = [null,'half-hole 3',null,'half-hole 2',null,'half-hole 1',null,null,'half-hole 6',null,'half-hole 5',null];
 function fingerChart(){ return fluteType === 'venu' ? FINGER_VENU : FINGER; }
 // fingering for a charted token (e.g. "S", "P", "S'")
 function fingeringFor(tok){
