@@ -737,15 +737,22 @@ function loopTuner(){
     setNeedle(sw.cents);
     renderTunerFinger(sw.idx);
     // transcription: log a stable, reasonably in-tune note once
-    if($('#transToggle').checked && Math.abs(sw.cents) < 38){
-      if(tuner.cand === sw.tok){ tuner.candCount++; }
-      else { tuner.cand = sw.tok; tuner.candCount = 1; }
-      if(tuner.candCount === 6 && sw.tok !== tuner.lastLogged){
-        tuner.transcript.push(sw.tok); tuner.lastLogged = sw.tok; renderTranscript();
+    if($('#transToggle').checked){
+      const speed = $('#transSpeed') ? $('#transSpeed').value : 'normal';
+      const threshold = speed === 'fast' ? 3 : speed === 'vfast' ? 2 : 6;
+      const centsTol  = speed === 'vfast' ? 30 : 38;
+      if(Math.abs(sw.cents) < centsTol){
+        if(tuner.cand === sw.tok){ tuner.candCount++; }
+        else { tuner.cand = sw.tok; tuner.candCount = 1; }
+        if(tuner.candCount === threshold && sw.tok !== tuner.lastLogged){
+          tuner.transcript.push(sw.tok); tuner.lastLogged = sw.tok; renderTranscript();
+        }
       }
     }
   } else {
-    if(++tuner.silence > 14){ tuner.lastLogged = null; tuner.cand = null; tuner.candCount = 0; }
+    const speed = $('#transSpeed') ? $('#transSpeed').value : 'normal';
+    const silenceThresh = speed === 'vfast' ? 4 : speed === 'fast' ? 7 : 14;
+    if(++tuner.silence > silenceThresh){ tuner.lastLogged = null; tuner.cand = null; tuner.candCount = 0; }
     setNeedle(0);
   }
   tuner.raf = requestAnimationFrame(loopTuner);

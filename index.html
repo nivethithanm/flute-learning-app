@@ -685,9 +685,19 @@
           </div>
 
           <div class="card">
-            <div class="lead-row" style="justify-content:space-between;margin-bottom:10px">
+            <div class="lead-row" style="justify-content:space-between;margin-bottom:10px;gap:8px;flex-wrap:wrap">
               <h3 style="font-size:1.05rem;margin:0">Transcript</h3>
-              <label class="pill" style="cursor:pointer"><input type="checkbox" id="transToggle" checked style="margin-right:7px;accent-color:var(--jade)">on</label>
+              <div class="lead-row" style="gap:8px;align-items:center">
+                <div class="field" style="flex-direction:row;align-items:center;gap:6px;margin:0">
+                  <label style="font-family:var(--mono);font-size:.64rem;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-mute);white-space:nowrap">Speed</label>
+                  <select id="transSpeed" style="padding:4px 8px;font-size:.78rem;border-radius:7px">
+                    <option value="normal">Normal (quarter)</option>
+                    <option value="fast">Fast (8th note)</option>
+                    <option value="vfast">Very fast (16th)</option>
+                  </select>
+                </div>
+                <label class="pill" style="cursor:pointer"><input type="checkbox" id="transToggle" checked style="margin-right:7px;accent-color:var(--jade)">on</label>
+              </div>
             </div>
             <div class="transcript" id="transcript"><span class="muted">Swaras will appear here as you play clear, steady notes…</span></div>
             <div class="lead-row" style="margin-top:12px;gap:9px">
