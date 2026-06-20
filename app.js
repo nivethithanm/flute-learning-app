@@ -800,6 +800,12 @@ function route(){
   if(!VIEWS.includes(id)) id = 'home';
   $$('.view').forEach(v => v.classList.toggle('active', v.dataset.view === id));
   $$('#nav a').forEach(a => a.classList.toggle('active', a.dataset.route === id));
+  // sync chip nav
+  $$('#chipNav .chip').forEach(c => {
+    const active = c.dataset.chip === id;
+    c.classList.toggle('active', active);
+    if(active) c.scrollIntoView({block:'nearest',inline:'center',behavior:'smooth'});
+  });
   if(id !== 'tuner' && tuner.running) stopTuner();
   closeMenu();
   window.scrollTo({top:0});

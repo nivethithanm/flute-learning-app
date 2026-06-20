@@ -233,6 +233,29 @@
     .scrim.show{display:block}
     .wrap{padding-top:34px}
   }
+  /* sticky chip nav */
+  .chip-nav{
+    position:sticky;top:0;z-index:28;
+    display:flex;gap:6px;overflow-x:auto;
+    padding:8px clamp(16px,3vw,40px);
+    background:rgba(22,17,13,.88);backdrop-filter:blur(12px);
+    border-bottom:1px solid var(--line-soft);
+    scrollbar-width:none;
+  }
+  .chip-nav::-webkit-scrollbar{display:none}
+  .chip{
+    flex:0 0 auto;font-family:var(--mono);font-size:.72rem;font-weight:600;
+    letter-spacing:.06em;text-transform:uppercase;text-decoration:none;
+    color:var(--ink-mute);background:var(--panel);
+    border:1px solid var(--line);border-radius:20px;
+    padding:5px 13px;transition:color .15s,border-color .15s,background .15s;
+    white-space:nowrap;
+  }
+  .chip:hover{color:var(--ink);border-color:var(--amber-deep)}
+  .chip.active{color:var(--amber);border-color:var(--amber-deep);background:rgba(227,169,72,.1)}
+  /* on desktop the sidebar already handles nav — hide chip nav */
+  @media(min-width:881px){.chip-nav{display:none}}
+
   /* global tradition toggle */
   .global-tradition{display:flex;flex-direction:column;gap:6px;margin-bottom:12px;padding:10px;background:var(--panel-2);border:1px solid var(--line);border-radius:var(--rad-sm)}
   .trad-label{font-family:var(--mono);font-size:.64rem;letter-spacing:.18em;text-transform:uppercase;color:var(--ink-mute)}
@@ -293,6 +316,18 @@
       </div>
       <button class="hamb" id="hamb" aria-label="Open menu">☰</button>
     </div>
+    <!-- Sticky section chips -->
+    <nav class="chip-nav" id="chipNav" aria-label="Section navigation">
+      <a class="chip active" href="#home" data-chip="home">Home</a>
+      <a class="chip" href="#basics" data-chip="basics">Basics</a>
+      <a class="chip" href="#sound" data-chip="sound">Sound</a>
+      <a class="chip" href="#notation" data-chip="notation">Fingering</a>
+      <a class="chip" href="#scales" data-chip="scales">Scales</a>
+      <a class="chip" href="#ragas" data-chip="ragas">Ragas</a>
+      <a class="chip" href="#songs" data-chip="songs">Songs</a>
+      <a class="chip" href="#tuner" data-chip="tuner">Tuner</a>
+    </nav>
+
     <div class="wrap">
 
       <!-- ============ HOME ============ -->
