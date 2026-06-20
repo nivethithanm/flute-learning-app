@@ -325,3 +325,28 @@ details summary::-webkit-details-marker{display:none}
 @media(prefers-reduced-motion:reduce){
   *{animation:none!important;transition:none!important;scroll-behavior:auto!important}
 }
+
+/* ---- Drone bar ---- */
+.drone-bar{
+  position:fixed;bottom:0;left:0;right:0;z-index:50;
+  display:flex;align-items:center;gap:12px;flex-wrap:wrap;
+  padding:10px clamp(14px,3vw,40px);
+  background:rgba(5,6,11,.92);backdrop-filter:blur(14px);
+  border-top:1px solid var(--line);
+  font-size:.82rem;
+}
+.drone-label{font-family:var(--mono);font-size:.7rem;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-mute)}
+.drone-toggle{font-family:var(--mono);font-size:.8rem;font-weight:600;padding:6px 14px;border-radius:20px;border:1px solid var(--amber-deep);background:transparent;color:var(--amber);cursor:pointer;transition:background .15s,color .15s}
+.drone-toggle.active{background:var(--amber);color:#1a1208}
+.drone-note{font-family:var(--mono);font-size:.76rem;color:var(--jade);min-width:56px}
+/* push wrap up so drone bar doesn't overlap content */
+.wrap{padding-bottom:80px}
+
+/* ---- Tradition card highlight ---- */
+.trad-card{transition:border-color .2s,box-shadow .2s}
+.trad-card.dim{opacity:.42;filter:saturate(.3)}
+.trad-card.active-trad{border-color:var(--amber-deep);box-shadow:0 0 0 2px rgba(240,180,41,.18)}
+
+/* ---- Breath exercise ---- */
+@keyframes breathExpand{from{r:30}to{r:68}}
+@keyframes breathShrink{from{r:68}to{r:30}}

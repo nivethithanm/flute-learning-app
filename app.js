@@ -1204,6 +1204,293 @@ function init(){
     $$('#lessonDots .ldot').forEach(d => d.addEventListener('click', () => goToStep(+d.dataset.step)));
   }
 
+  // ---- FEATURE 2: Build-the-note game — play pitch on hole click ----
+  // Patch hole click to also play a sound
+  const origRender = renderGameHoles;
+  // Override hole click to play audio
+  function renderGameHolesWithAudio(){
+    const wrap = $('#sgameHoles'); if(!wrap) return;
+    wrap.innerHTML = '';
+    gameHoles.forEach((closed, i) => {
+      const btn = el('button', 'sgame-hole' + (closed ? ' closed' : ''));
+      btn.textContent = i + 1;
+      btn.title = closed ? 'closed — tap to open' : 'open — tap to close';
+      btn.addEventListener('click', () => {
+        gameHoles[i] = !gameHoles[i];
+        renderGameHolesWithAudio();
+        checkGame();
+        // play the current resulting pitch
+        const firstOpen = gameHoles.reduceRight((acc, v, idx) => (!v && acc === -1 ? idx : acc), -1);
+        const noteIdx = firstOpen === -1 ? 0 : Math.min(firstOpen + 1, GAME_SWARAS.length - 1);
+        const saHz = saHzFrom($('#saSelect'), $('#saOct'));
+        playSwara(GAME_SEMIS[noteIdx], saHz);
+      });
+      wrap.appendChild(btn);
+    });
+  }
+  if($('#sgameHoles')) renderGameHolesWithAudio();
+
+  // ---- FEATURE 3: Notation table tradition highlight ----
+  function updateTradCards(){
+    const carnatic = swaraSystem === 'carnatic';
+    const cc = $('#carnaticCard'), hc = $('#hindCard');
+    if(!cc || !hc) return;
+    cc.classList.toggle('active-trad', carnatic);
+    cc.classList.toggle('dim', !carnatic);
+    hc.classList.toggle('active-trad', !carnatic);
+    hc.classList.toggle('dim', carnatic);
+  }
+  updateTradCards();
+  // patch setTradition to also update cards
+  const _origSetTrad = setTradition;
+  setTradition = function(t){ _origSetTrad(t); updateTradCards(); };
+  $$('#globalToggleSide .seg-btn, #globalToggleTop .seg-btn').forEach(b =>
+    b.addEventListener('click', () => updateTradCards()));
+
+  // ---- FEATURE 4: Breath pressure guide (embouchure canvas) ----
+  (function embouchureGuide(){
+    const cv = $('#embouchureCanvas'); if(!cv) return;
+    const ctx = cv.getContext('2d');
+    const W = cv.width, H = cv.height;
+    let emAngleVal = 45, emSpeedVal = 3;
+    function drawEmbouchure(){
+      ctx.clearRect(0,0,W,H);
+      const ps = getComputedStyle(document.documentElement);
+      const cPanel  = ps.getPropertyValue('--panel').trim();
+      const cPanel2 = ps.getPropertyValue('--panel-2').trim();
+      const cAmber  = ps.getPropertyValue('--amber').trim();
+      const cJade   = ps.getPropertyValue('--jade').trim();
+      const cLine   = ps.getPropertyValue('--line').trim();
+      const cInkMut = ps.getPropertyValue('--ink-mute').trim();
+
+      // Draw flute cross-section (top edge of blow hole)
+      const fluteY = H * 0.55;
+      ctx.fillStyle = cPanel2; ctx.strokeStyle = cLine; ctx.lineWidth = 2;
+      ctx.fillRect(0, fluteY, W, H - fluteY); ctx.strokeRect(0, fluteY, W, H - fluteY);
+
+      // Blow hole opening (oval cutout in top of flute)
+      const bhCx = W/2, bhW = 54, bhH = 14;
+      ctx.clearRect(bhCx - bhW/2, fluteY - 4, bhW, bhH + 4);
+      ctx.strokeStyle = cAmber; ctx.lineWidth = 1.5;
+      ctx.beginPath(); ctx.ellipse(bhCx, fluteY, bhW/2, bhH/2, 0, 0, Math.PI*2); ctx.stroke();
+
+      // Edge of blow hole (the sharp edge where air splits)
+      const edgeX = bhCx + bhW/2 - 8;
+      ctx.fillStyle = cAmber;
+      ctx.beginPath(); ctx.moveTo(edgeX, fluteY - 6); ctx.lineTo(edgeX + 6, fluteY); ctx.lineTo(edgeX, fluteY + 4); ctx.closePath(); ctx.fill();
+
+      // Lips (top-left area)
+      const lipsX = W * 0.22, lipsY = fluteY - 60;
+      ctx.fillStyle = ps.getPropertyValue('--rose').trim(); ctx.globalAlpha = 0.7;
+      ctx.beginPath(); ctx.ellipse(lipsX, lipsY, 20, 8, 0, 0, Math.PI*2); ctx.fill();
+      ctx.globalAlpha = 1;
+      ctx.fillStyle = ps.getPropertyValue('--ink').trim(); ctx.font = '500 10px var(--mono,monospace)';
+      ctx.textAlign = 'center'; ctx.fillText('lips', lipsX, lipsY + 20);
+
+      // Air jet direction
+      const angleRad = (emAngleVal * Math.PI) / 180;
+      const jLen = 60 + emSpeedVal * 10;
+      const jDx = Math.cos(-angleRad + Math.PI*0.18) * jLen;
+      const jDy = Math.sin(-angleRad + Math.PI*0.18) * jLen;
+      ctx.strokeStyle = cJade; ctx.lineWidth = 2.5 + emSpeedVal * 0.4; ctx.globalAlpha = 0.85;
+      ctx.setLineDash([5, 3]);
+      ctx.beginPath(); ctx.moveTo(lipsX, lipsY); ctx.lineTo(lipsX + jDx, lipsY + jDy); ctx.stroke();
+      ctx.setLineDash([]); ctx.globalAlpha = 1;
+
+      // Arrowhead at jet end
+      const jEndX = lipsX + jDx, jEndY = lipsY + jDy;
+      ctx.fillStyle = cJade;
+      ctx.beginPath(); ctx.arc(jEndX, jEndY, 4, 0, Math.PI*2); ctx.fill();
+
+      // Result label inside canvas
+      const result = getEmResult(emAngleVal, emSpeedVal);
+      ctx.fillStyle = result.color; ctx.font = '600 11px var(--mono,monospace)';
+      ctx.textAlign = 'center'; ctx.fillText(result.label, W/2, H - 12);
+      ctx.textAlign = 'left';
+    }
+    function getEmResult(angle, speed){
+      // Sweet spot: angle 35-55°, speed 2-4
+      if(angle < 20) return { label:'Too steep — misses edge', color:'#f87171', q:'bad' };
+      if(angle > 65) return { label:'Too shallow — no resonance', color:'#f87171', q:'bad' };
+      if(speed === 1) return { label:'Too soft — airy, weak tone', color:'#f0b429', q:'soft' };
+      if(speed === 5) return { label:'Too hard — squeaks, overblow', color:'#f0b429', q:'hard' };
+      if(angle >= 30 && angle <= 60 && speed >= 2 && speed <= 4)
+        return { label:'✓ Sweet spot — clear tone', color:'#34d399', q:'good' };
+      return { label:'Adjust slightly…', color:'#a0a8c8', q:'ok' };
+    }
+    function updateEmGuide(){
+      emAngleVal = parseInt($('#emAngle').value, 10);
+      emSpeedVal = parseInt($('#emSpeed').value, 10);
+      const speedNames = ['','very soft','soft','medium','firm','hard'];
+      $('#angleVal').textContent = emAngleVal + '°';
+      $('#speedVal').textContent = speedNames[emSpeedVal] || emSpeedVal;
+      const r = getEmResult(emAngleVal, emSpeedVal);
+      $('#emResult').textContent = r.label;
+      $('#emResult').style.color = r.color;
+      drawEmbouchure();
+    }
+    $('#emAngle').addEventListener('input', updateEmGuide);
+    $('#emSpeed').addEventListener('input', updateEmGuide);
+    $('#emPlay').addEventListener('click', () => {
+      const r = getEmResult(emAngleVal, emSpeedVal);
+      const saHz = saHzFrom($('#saSelect'), $('#saOct'));
+      const c = ac();
+      if(r.q === 'bad'){
+        // no sound / faint noise — just white noise burst
+        const buf = noiseBuffer(c);
+        const src = c.createBufferSource(); src.buffer = buf; src.loop = true;
+        const g = c.createGain(); g.gain.setValueAtTime(0.04, c.currentTime);
+        g.gain.exponentialRampToValueAtTime(0.0001, c.currentTime + 0.5);
+        src.connect(g); g.connect(master); src.start(); src.stop(c.currentTime + 0.5);
+      } else if(r.q === 'hard'){
+        // overblow — plays octave up
+        blow(saHz * 2, c.currentTime + 0.01, 0.6);
+      } else if(r.q === 'soft'){
+        // airy — faint with more noise
+        blow(saHz, c.currentTime + 0.01, 0.7);
+      } else {
+        // clean tone
+        blow(saHz, c.currentTime + 0.01, 1.0);
+      }
+    });
+    updateEmGuide();
+  })();
+
+  // ---- FEATURE 5: Animated breath exercise ----
+  (function breathExercise(){
+    const cv = $('#breathCircle'); if(!cv) return;
+    const ctx = cv.getContext('2d');
+    const W = cv.width, H = cv.height, CX = W/2, CY = H/2;
+    const PHASES = [
+      { name:'Breathe in',   beats:4, dir:1,  tip:'Fill your belly, not your chest. Let it expand like a balloon.',  color:'#34d399' },
+      { name:'Hold',         beats:2, dir:0,  tip:'Keep the pressure steady — your diaphragm is locked.',           color:'#f0b429' },
+      { name:'Breathe out',  beats:6, dir:-1, tip:'Steady, controlled exhale — imagine fogging a mirror slowly.',   color:'#60a5fa' },
+      { name:'Rest',         beats:1, dir:0,  tip:'Relax everything before the next cycle.',                        color:'#a0a8c8' },
+    ];
+    let running = false, phase = 0, beat = 0, radius = 30, rafId = null, lastTime = 0, elapsed = 0;
+    const MIN_R = 30, MAX_R = 68;
+    function drawBreath(r, ph){
+      ctx.clearRect(0, 0, W, H);
+      const p = PHASES[ph];
+      // outer ring
+      ctx.strokeStyle = p.color; ctx.lineWidth = 3; ctx.globalAlpha = 0.25;
+      ctx.beginPath(); ctx.arc(CX, CY, MAX_R + 6, 0, Math.PI*2); ctx.stroke();
+      ctx.globalAlpha = 1;
+      // main circle
+      const grad = ctx.createRadialGradient(CX, CY, 2, CX, CY, r);
+      grad.addColorStop(0, p.color + '55'); grad.addColorStop(1, p.color + '18');
+      ctx.fillStyle = grad;
+      ctx.beginPath(); ctx.arc(CX, CY, r, 0, Math.PI*2); ctx.fill();
+      ctx.strokeStyle = p.color; ctx.lineWidth = 2.5; ctx.globalAlpha = 0.8;
+      ctx.beginPath(); ctx.arc(CX, CY, r, 0, Math.PI*2); ctx.stroke();
+      ctx.globalAlpha = 1;
+    }
+    const BPS = 60 / 72; // beat duration in seconds (72 bpm)
+    function tick(now){
+      if(!running) return;
+      const dt = Math.min((now - lastTime) / 1000, 0.1); lastTime = now;
+      elapsed += dt;
+      const p = PHASES[phase];
+      const phaseDur = p.beats * BPS;
+      const progress = Math.min(elapsed / phaseDur, 1);
+      // update radius
+      if(p.dir === 1) radius = MIN_R + (MAX_R - MIN_R) * progress;
+      else if(p.dir === -1) radius = MAX_R - (MAX_R - MIN_R) * progress;
+      // update beat label
+      const currentBeat = Math.min(Math.floor(elapsed / BPS) + 1, p.beats);
+      $('#breathBeatLabel').textContent = `Beat ${currentBeat} / ${p.beats}`;
+      drawBreath(radius, phase);
+      if(elapsed >= phaseDur){
+        elapsed = 0; phase = (phase + 1) % PHASES.length;
+        const np = PHASES[phase];
+        $('#breathPhaseLabel').textContent = np.name;
+        $('#breathTip').textContent = np.tip;
+        $('#breathTip').style.color = np.color;
+      }
+      rafId = requestAnimationFrame(tick);
+    }
+    drawBreath(MIN_R, 0);
+    $('#breathStart').addEventListener('click', () => {
+      running = true; phase = 0; elapsed = 0; radius = MIN_R; lastTime = performance.now();
+      const p = PHASES[0];
+      $('#breathPhaseLabel').textContent = p.name;
+      $('#breathBeatLabel').textContent  = `Beat 1 / ${p.beats}`;
+      $('#breathTip').textContent = p.tip;
+      $('#breathTip').style.color = p.color;
+      $('#breathStart').disabled = true; $('#breathStop').disabled = false;
+      rafId = requestAnimationFrame(tick);
+    });
+    $('#breathStop').addEventListener('click', () => {
+      running = false; cancelAnimationFrame(rafId);
+      $('#breathStart').disabled = false; $('#breathStop').disabled = true;
+      $('#breathPhaseLabel').textContent = '—'; $('#breathBeatLabel').textContent = 'Press Start';
+      radius = MIN_R; drawBreath(MIN_R, 0);
+    });
+  })();
+
+  // ---- FEATURE 1: Drone / Tanpura ----
+  (function droneSetup(){
+    const btn = $('#droneToggle'); if(!btn) return;
+    let droneNodes = null, droneRunning = false;
+    function getDroneHz(){
+      const saHz = saHzFrom($('#saSelect'), $('#saOct')) || 261.63;
+      return saHz;
+    }
+    function buildTanpuraTone(saHz, tradition){
+      const c = ac();
+      // Carnatic tanpura: Sa Pa Sa' Sa'' / Hindustani: Sa Ma Pa Sa'
+      const intervals = tradition === 'hindustani' ? [0, 5, 7, 12] : [0, 7, 12, 24];
+      const freqs = intervals.map(s => saHz * Math.pow(2, s/12));
+      const masterGain = c.createGain();
+      masterGain.gain.setValueAtTime(0.0001, c.currentTime);
+      masterGain.gain.linearRampToValueAtTime(parseFloat($('#droneVol').value), c.currentTime + 1.2);
+      masterGain.connect(master);
+      const lp = c.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 2200; lp.Q.value = 0.5;
+      lp.connect(masterGain);
+      const oscillators = freqs.map((f, i) => {
+        const o = c.createOscillator(); o.type = 'sine'; o.frequency.value = f;
+        // Slight detuning for tanpura shimmer
+        o.detune.value = [0, 3, -3, 5][i] || 0;
+        const g = c.createGain(); g.gain.value = [0.38, 0.22, 0.28, 0.15][i] || 0.2;
+        // Slow tremolo to simulate string pluck decay
+        const trem = c.createOscillator(); trem.frequency.value = 0.6 + i*0.1;
+        const tremG = c.createGain(); tremG.gain.value = 0.08;
+        trem.connect(tremG); tremG.connect(g.gain);
+        trem.start(); o.connect(g); g.connect(lp); o.start();
+        return [o, g, trem, tremG];
+      });
+      return { oscillators, masterGain, lp };
+    }
+    function startDrone(){
+      const saHz = getDroneHz();
+      const trad = $('#droneTradition').value;
+      droneNodes = buildTanpuraTone(saHz, trad);
+      droneRunning = true;
+      btn.textContent = '◼ Stop'; btn.classList.add('active');
+      const midi = midiFromFreq(saHz);
+      $('#droneNote').textContent = noteName(midi) + ' Sa';
+    }
+    function stopDrone(){
+      if(!droneNodes) return;
+      const c = ac();
+      droneNodes.masterGain.gain.linearRampToValueAtTime(0.0001, c.currentTime + 0.8);
+      const nodes = droneNodes;
+      setTimeout(() => {
+        nodes.oscillators.forEach(([o,,tr]) => { try{ o.stop(); tr.stop(); }catch(e){} });
+      }, 900);
+      droneNodes = null; droneRunning = false;
+      btn.textContent = '▶ Sa'; btn.classList.remove('active');
+      $('#droneNote').textContent = '—';
+    }
+    btn.addEventListener('click', () => droneRunning ? stopDrone() : startDrone());
+    $('#droneVol').addEventListener('input', () => {
+      if(droneNodes) droneNodes.masterGain.gain.setTargetAtTime(parseFloat($('#droneVol').value), ac().currentTime, 0.05);
+    });
+    // Restart drone when Sa changes
+    $('#saSelect').addEventListener('change', () => { if(droneRunning){ stopDrone(); setTimeout(startDrone, 950); } });
+    $('#saOct').addEventListener('change',    () => { if(droneRunning){ stopDrone(); setTimeout(startDrone, 950); } });
+  })();
+
   // animations
   heroAnim(); pipeAnim();
   window.addEventListener('resize', () => {});

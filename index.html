@@ -288,6 +288,26 @@
           </div>
         </div><!-- /lesson-wrap -->
 
+        <!-- Animated breath exercise -->
+        <div class="block" id="breathExBlock">
+          <h3>🫁 Breath exercise — train your diaphragm</h3>
+          <p class="muted">Flute playing is diaphragmatic, not chest breathing. Follow the circle: expand your belly on inhale, stay tall, control the exhale across 6 beats.</p>
+          <div class="card" style="display:flex;align-items:center;gap:28px;flex-wrap:wrap;padding:24px">
+            <div style="flex:0 0 auto;position:relative;width:160px;height:160px">
+              <canvas id="breathCircle" width="160" height="160" style="width:160px;height:160px;border-radius:50%"></canvas>
+            </div>
+            <div style="flex:1;min-width:180px">
+              <div id="breathPhaseLabel" style="font-family:var(--display);font-size:1.5rem;font-weight:600;margin-bottom:6px">—</div>
+              <div id="breathBeatLabel" style="font-family:var(--mono);font-size:.9rem;color:var(--ink-mute);margin-bottom:16px">Press Start</div>
+              <div id="breathTip" style="font-size:.86rem;color:var(--jade);background:rgba(52,211,153,.07);border:1px solid rgba(52,211,153,.18);border-radius:9px;padding:9px 13px;margin-bottom:14px">Sit tall · shoulders relaxed · belly out on inhale</div>
+              <div style="display:flex;gap:10px">
+                <button class="btn jade sm" id="breathStart">▶ Start</button>
+                <button class="btn sm" id="breathStop" disabled>◼ Stop</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <!-- Quick-ref comparison (collapsed) -->
         <details class="card block">
           <summary style="cursor:pointer;font-weight:600;list-style:none;display:flex;justify-content:space-between;align-items:center">
@@ -353,6 +373,29 @@
           </div>
         </div>
 
+        <!-- Breath pressure guide -->
+        <div class="block">
+          <h3>💨 Breath pressure guide — find your embouchure</h3>
+          <p class="muted">Two things control tone: the <b>angle</b> of your air stream across the blow hole, and the <b>speed</b> (pressure) of your breath. Drag the sliders and listen.</p>
+          <div class="card" style="padding:20px">
+            <div style="display:flex;gap:20px;flex-wrap:wrap;align-items:flex-start">
+              <canvas id="embouchureCanvas" style="flex:0 0 auto;border-radius:12px;background:var(--bg);border:1px solid var(--line)" width="260" height="200"></canvas>
+              <div style="flex:1;min-width:200px;display:flex;flex-direction:column;gap:14px">
+                <div class="field">
+                  <label>Air angle <span id="angleVal" style="color:var(--amber)">45°</span></label>
+                  <input type="range" id="emAngle" min="10" max="80" value="45" step="1">
+                </div>
+                <div class="field">
+                  <label>Breath speed <span id="speedVal" style="color:var(--amber)">medium</span></label>
+                  <input type="range" id="emSpeed" min="1" max="5" value="3" step="1">
+                </div>
+                <div id="emResult" class="lcard-tip" style="margin-top:0">Adjust the sliders to hear the effect</div>
+                <button class="btn jade sm" id="emPlay">▶ Hear it</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <!-- Build-the-note game -->
         <div class="block">
           <div class="lead-row" style="justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:10px">
@@ -412,13 +455,13 @@
           <p class="note-small">Lowercase / rose = <b>komal</b> (lowered, Hindustani) ≈ the lower Carnatic variants. M with a mark = <b>tivra / prati madhyama</b>.</p>
         </div>
 
-        <div class="grid g2 block">
-          <div class="card">
+        <div class="grid g2 block" id="tradTables">
+          <div class="card trad-card" id="carnaticCard">
             <h3>Carnatic swaras</h3>
             <p class="muted" style="margin:0 0 8px">Sixteen names map onto twelve pitches (some share a position):</p>
             <div class="scroll-x"><table class="tbl"><tbody id="carnaticTbl"></tbody></table></div>
           </div>
-          <div class="card">
+          <div class="card trad-card" id="hindCard">
             <h3>Hindustani sargam</h3>
             <p class="muted" style="margin:0 0 8px">Shuddha (natural), komal (♭) and one tivra (♯) Ma:</p>
             <div class="scroll-x"><table class="tbl"><tbody id="hindTbl"></tbody></table></div>
@@ -631,6 +674,18 @@
 
     </div>
   </main>
+</div>
+
+<!-- ====== FLOATING DRONE BAR ====== -->
+<div class="drone-bar" id="droneBar">
+  <span class="drone-label">🎵 Drone</span>
+  <button class="drone-toggle" id="droneToggle" aria-label="Start drone">▶ Sa</button>
+  <input type="range" id="droneVol" min="0" max="1" step="0.05" value="0.45" title="Volume" style="width:72px;accent-color:var(--amber)">
+  <span class="drone-note" id="droneNote">—</span>
+  <select id="droneTradition" style="font-size:.76rem;padding:4px 7px;border-radius:8px;background:var(--panel-2);color:var(--ink);border:1px solid var(--line)">
+    <option value="carnatic">Carnatic (Sa-Pa-Sa)</option>
+    <option value="hindustani">Hindustani (Sa-Ma-Pa-Sa)</option>
+  </select>
 </div>
 
 <script src="app.js"></script>
