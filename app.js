@@ -20,19 +20,20 @@ let swaraSystem = 'carnatic'; // 'carnatic' | 'hindustani'
 const NOTE_NAMES = ['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
 const A4 = 440;
 
+// sub = Carnatic label, hind = Hindustani label
 const SWARAS = [
-  {tok:'S', sub:'Sa',  alt:false},
-  {tok:'r', sub:'re',  alt:true},
-  {tok:'R', sub:'Re',  alt:false},
-  {tok:'g', sub:'ga',  alt:true},
-  {tok:'G', sub:'Ga',  alt:false},
-  {tok:'m', sub:'ma',  alt:false},
-  {tok:'M', sub:'Má',  alt:true},
-  {tok:'P', sub:'Pa',  alt:false},
-  {tok:'d', sub:'dha', alt:true},
-  {tok:'D', sub:'Dha', alt:false},
-  {tok:'n', sub:'ni',  alt:true},
-  {tok:'N', sub:'Ni',  alt:false},
+  {tok:'S', sub:'Sa',   hind:'Sa',   alt:false},
+  {tok:'r', sub:'ri₁',  hind:'Re♭',  alt:true},
+  {tok:'R', sub:'Ri',   hind:'Re',   alt:false},
+  {tok:'g', sub:'ga₂',  hind:'Ga♭',  alt:true},
+  {tok:'G', sub:'Ga',   hind:'Ga',   alt:false},
+  {tok:'m', sub:'Ma',   hind:'Ma',   alt:false},
+  {tok:'M', sub:'Má',   hind:'Ma♯',  alt:true},
+  {tok:'P', sub:'Pa',   hind:'Pa',   alt:false},
+  {tok:'d', sub:'da₁',  hind:'Dha♭', alt:true},
+  {tok:'D', sub:'Da',   hind:'Dha',  alt:false},
+  {tok:'n', sub:'ni₁',  hind:'Ni♭',  alt:true},
+  {tok:'N', sub:'Ni',   hind:'Ni',   alt:false},
 ];
 const TOK2SEMI = {S:0,r:1,R:2,g:3,G:4,m:5,M:6,P:7,d:8,D:9,n:10,N:11};
 
@@ -304,7 +305,8 @@ function buildSwaraBoard(){
   const board = $('#swaraBoard'); board.innerHTML = '';
   SWARAS.forEach((s, i) => {
     const b = el('button', 'swara' + (s.alt ? ' komal' : ''));
-    b.innerHTML = `${s.tok}<span class="nm">${s.sub}</span>`;
+    const label = swaraSystem === 'hindustani' ? s.hind : s.sub;
+    b.innerHTML = `${s.tok}<span class="nm">${label}</span>`;
     b.addEventListener('click', () => {
       const saHz = saHzFrom($('#saSelect'), $('#saOct'));
       playSwara(i, saHz);
@@ -411,23 +413,19 @@ function setFluteType(t){
 }
 
 function setTradition(tradition){
-  // carnatic → bansuri + carnatic naming; hindustani → bansuri + hindustani naming
-  // (venu is still selectable per-page via the local toggles)
   swaraSystem = tradition;
-  if(tradition === 'carnatic'){
-    setFluteType('bansuri');
-  } else {
-    setFluteType('bansuri');
-    swaraSystem = 'hindustani';
-  }
+  // Carnatic → venu (8-hole); Hindustani → bansuri (6-hole)
+  setFluteType(tradition === 'carnatic' ? 'venu' : 'bansuri');
   // sync both global toggle instances
   $$('#globalToggleSide .seg-btn, #globalToggleTop .seg-btn').forEach(b =>
     b.classList.toggle('active', b.dataset.tradition === tradition));
-  // sync tuner naming select if present
-  const sysSel = $('#tunerSystem');
-  if(sysSel) sysSel.value = tradition;
-  // rebuild swara board labels (they use swaraSystem indirectly via tuner label)
+  // sync tuner selects
+  const sysSel = $('#tunerSystem'); if(sysSel) sysSel.value = tradition;
+  const ftSel  = $('#tunerFlute');  if(ftSel)  ftSel.value  = fluteType;
+  // rebuild all label-dependent UI
   buildSwaraBoard();
+  buildRagas();   // raga names differ (Carnatic vs Hindustani column)
+  localStorage.setItem('kuzhal_tradition', tradition);
 }
 
 /* ----- SOUND / travel table ----- */
@@ -569,13 +567,18 @@ function heroAnim(){
     const {ctx, w, h} = fitCanvas(cv);
     ctx.clearRect(0,0,w,h);
     const cy = h * 0.5, bodyH = Math.min(h*0.34, 120), x0 = w*0.08, x1 = w*0.92, L = x1 - x0;
-    // flute body
-    ctx.fillStyle = '#241c12'; ctx.strokeStyle = '#7a5a26'; ctx.lineWidth = 1.4;
+    // flute body — use CSS variable colours resolved at draw time
+    const style = getComputedStyle(document.documentElement);
+    const cPanel  = style.getPropertyValue('--panel').trim()  || '#1a1e2e';
+    const cLine   = style.getPropertyValue('--line').trim()   || '#2a3050';
+    const cAmber  = style.getPropertyValue('--amber').trim()  || '#f0b429';
+    const cAmberD = style.getPropertyValue('--amber-deep').trim() || '#c48a0a';
+    ctx.fillStyle = cPanel; ctx.strokeStyle = cLine; ctx.lineWidth = 1.4;
     roundRect(ctx, x0, cy - bodyH/2, L, bodyH, bodyH/2); ctx.fill(); ctx.stroke();
     // finger holes
-    ctx.fillStyle = '#e3a948';
+    ctx.fillStyle = cAmber;
     for(let i=0;i<6;i++){ const hx = x0 + L*(0.42 + i*0.085); ctx.beginPath(); ctx.arc(hx, cy, 3.4, 0, 7); ctx.fill(); }
-    ctx.fillStyle = '#b9842f'; ctx.beginPath(); ctx.arc(x0 + L*0.16, cy, 4.4, 0, 7); ctx.fill();
+    ctx.fillStyle = cAmberD; ctx.beginPath(); ctx.arc(x0 + L*0.16, cy, 4.4, 0, 7); ctx.fill();
     // standing wave inside
     const amp = bodyH*0.34;
     ctx.lineWidth = 2.2; ctx.strokeStyle = '#5cc7a6';
@@ -615,16 +618,17 @@ function pipeAnim(){
     const cy = h/2;
     const x0 = w*0.06, x1 = x0 + (w*0.88)*(len/0.66);
     // pipe walls
-    ctx.strokeStyle = '#5a4424'; ctx.lineWidth = 2;
+    const ps = getComputedStyle(document.documentElement);
+    ctx.strokeStyle = ps.getPropertyValue('--line').trim() || '#2a3050'; ctx.lineWidth = 2;
     ctx.beginPath(); ctx.moveTo(x0, cy - h*0.32); ctx.lineTo(x1, cy - h*0.32);
     ctx.moveTo(x0, cy + h*0.32); ctx.lineTo(x1, cy + h*0.32); ctx.stroke();
     // animated standing wave
     const amp = h*0.27;
-    ctx.lineWidth = 2.4; ctx.strokeStyle = '#5cc7a6';
+    ctx.lineWidth = 2.4; ctx.strokeStyle = ps.getPropertyValue('--jade').trim() || '#34d399';
     drawWave(ctx, x0, x1, cy, amp, harm, t, 1);
     ctx.globalAlpha=.35; drawWave(ctx, x0, x1, cy, amp, harm, t+Math.PI, 1); ctx.globalAlpha=1;
     // nodes
-    ctx.fillStyle = '#e3a948';
+    ctx.fillStyle = ps.getPropertyValue('--amber').trim() || '#f0b429';
     for(let k=1;k<harm;k++){ const nx = x0 + (x1-x0)*(k/harm); ctx.beginPath(); ctx.arc(nx, cy, 3.5, 0, 7); ctx.fill(); }
     const midi = midiFromFreq(f);
     $('#pipeReadout').textContent = `${f.toFixed(0)} Hz ≈ ${noteName(midi)}  ·  L ${(len*100).toFixed(0)} cm`;
@@ -758,7 +762,8 @@ function loopTuner(){
         if(tuner.cand === sw.tok){ tuner.candCount++; }
         else { tuner.cand = sw.tok; tuner.candCount = 1; }
         if(tuner.candCount === threshold && sw.tok !== tuner.lastLogged){
-          tuner.transcript.push(sw.tok); tuner.lastLogged = sw.tok; renderTranscript();
+          tuner.transcript.push({tok: sw.tok, t: performance.now()});
+          tuner.lastLogged = sw.tok; renderTranscript();
         }
       }
     }
@@ -770,10 +775,32 @@ function loopTuner(){
   }
   tuner.raf = requestAnimationFrame(loopTuner);
 }
+function transcriptToks(){ return tuner.transcript.map(e => e.tok || e); }
 function renderTranscript(){
   const t = $('#transcript');
   if(!tuner.transcript.length){ t.innerHTML = '<span class="muted">Swaras will appear here as you play clear, steady notes…</span>'; return; }
-  t.innerHTML = tuner.transcript.map(prettySwara).join('&nbsp; ');
+  t.innerHTML = transcriptToks().map(prettySwara).join('&nbsp; ');
+}
+function playTranscript(){
+  if(!tuner.transcript.length) return;
+  stopAll();
+  const c = ac();
+  const saHz = saHzFrom($('#tunerKey'), $('#tunerOct'));
+  const entries = tuner.transcript;
+  if(entries.length === 1 || typeof entries[0] === 'string'){
+    // no timing info — fall back to fixed tempo
+    playSequence(transcriptToks().join(' '), saHz, 500);
+    return;
+  }
+  // use recorded inter-onset intervals, clamped to 120ms–2000ms per note
+  let t = c.currentTime + 0.06;
+  entries.forEach((e, i) => {
+    const semi = tokenToSemi(e.tok);
+    const next = entries[i + 1];
+    const dur = next ? Math.min(2.0, Math.max(0.12, (next.t - e.t) / 1000)) : 0.5;
+    if(semi !== null) blow(saHz * Math.pow(2, semi / 12), t, dur * 0.92);
+    t += dur;
+  });
 }
 function drawScope(buf){
   const cv = $('#tunerScope'); if(!cv) return;
@@ -801,13 +828,14 @@ function wireTuner(){
   const flSel = $('#tunerFlute');
   if(flSel) flSel.addEventListener('change', e => setFluteType(e.target.value));
   $('#transClear').addEventListener('click', () => { tuner.transcript = []; tuner.lastLogged = null; renderTranscript(); });
+  $('#transPlay').addEventListener('click', playTranscript);
   $('#transCopy').addEventListener('click', () => {
-    const txt = tuner.transcript.join(' ');
+    const txt = transcriptToks().join(' ');
     navigator.clipboard && navigator.clipboard.writeText(txt);
     const btn = $('#transCopy'); const o = btn.textContent; btn.textContent = 'Copied'; setTimeout(()=>btn.textContent=o,1200);
   });
   $('#transToNb').addEventListener('click', () => {
-    $('#nbNotes').value = tuner.transcript.join(' ');
+    $('#nbNotes').value = transcriptToks().join(' ');
     $('#nbTitle').value = 'Transcribed ' + new Date().toLocaleDateString();
     location.hash = '#songs';
   });
@@ -882,7 +910,9 @@ function init(){
   $$('#themeToggleSide, #themeToggleTop').forEach(btn =>
     btn.addEventListener('click', () => applyTheme(!document.documentElement.classList.contains('light'))));
 
-  // global tradition toggle (sidebar + topbar)
+  // global tradition toggle — restore saved preference, then wire clicks
+  const savedTradition = localStorage.getItem('kuzhal_tradition') || 'carnatic';
+  setTradition(savedTradition);
   $$('#globalToggleSide .seg-btn, #globalToggleTop .seg-btn').forEach(btn =>
     btn.addEventListener('click', () => setTradition(btn.dataset.tradition)));
 

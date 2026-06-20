@@ -10,52 +10,57 @@
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
   :root{
-    --bg:#16110d;
-    --bg-2:#1d1813;
-    --panel:#221c16;
-    --panel-2:#2a231b;
-    --line:#3a2f24;
-    --line-soft:#2f261d;
-    --ink:#f3e9da;
-    --ink-dim:#c9bba6;
-    --ink-mute:#8f8169;
-    --amber:#e3a948;
-    --amber-deep:#b9842f;
-    --jade:#5cc7a6;
-    --jade-deep:#39a988;
-    --rose:#d97a66;
+    /* Dark theme — cool slate */
+    --bg:#0f1117;
+    --bg-2:#141720;
+    --panel:#1a1e2e;
+    --panel-2:#20253a;
+    --line:#2a3050;
+    --line-soft:#222840;
+    --ink:#e8eaf6;
+    --ink-dim:#a0a8c8;
+    --ink-mute:#5a6490;
+    --amber:#f0b429;
+    --amber-deep:#c48a0a;
+    --jade:#34d399;
+    --jade-deep:#10b981;
+    --rose:#f87171;
     --rad:14px;
     --rad-sm:9px;
     --maxw:1180px;
-    --shadow:0 18px 50px -28px rgba(0,0,0,.85);
+    --shadow:0 20px 60px -20px rgba(0,0,0,.9);
     --display:'Fraunces',Georgia,'Times New Roman',serif;
     --body:'Plus Jakarta Sans',system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
     --mono:'IBM Plex Mono',ui-monospace,SFMono-Regular,Menlo,monospace;
   }
-  /* Light mode overrides */
+  /* Light mode — warm parchment */
   html.light{
-    --bg:#f5f0e8;
-    --bg-2:#ede7da;
-    --panel:#e8e0d0;
-    --panel-2:#ddd5c2;
-    --line:#c8bda8;
-    --line-soft:#d4c9b5;
-    --ink:#2a1f0e;
-    --ink-dim:#5a4830;
-    --ink-mute:#8a7458;
-    --shadow:0 8px 32px -12px rgba(0,0,0,.18);
+    --bg:#f8f6f1;
+    --bg-2:#f0ece4;
+    --panel:#e8e3d8;
+    --panel-2:#dfd9cc;
+    --line:#c8bfae;
+    --line-soft:#d8d0c0;
+    --ink:#1a1612;
+    --ink-dim:#4a3f30;
+    --ink-mute:#7a6a50;
+    --amber:#b8720a;
+    --amber-deep:#8a5208;
+    --jade:#0d7a52;
+    --jade-deep:#0a5e3e;
+    --rose:#b84040;
+    --shadow:0 8px 32px -12px rgba(0,0,0,.14);
   }
   html.light body{
     background:
-      radial-gradient(1100px 600px at 78% -8%, rgba(227,169,72,.10), transparent 60%),
-      radial-gradient(900px 700px at -8% 110%, rgba(92,199,166,.08), transparent 55%),
+      radial-gradient(900px 500px at 80% -5%, rgba(240,180,40,.08), transparent 55%),
+      radial-gradient(700px 600px at -5% 105%, rgba(13,122,82,.06), transparent 50%),
       var(--bg);
   }
   html.light .side{background:linear-gradient(180deg,var(--bg-2),var(--bg))}
-  html.light .topbar{background:rgba(245,240,232,.88)}
-  html.light .chip-nav{background:rgba(245,240,232,.88)}
-  html.light canvas{filter:none}
-  html.light select,html.light input[type=text],html.light textarea{background:var(--panel);color:var(--ink)}
+  html.light .topbar{background:rgba(248,246,241,.9)}
+  html.light .chip-nav{background:rgba(248,246,241,.9)}
+  html.light select,html.light input[type=text],html.light textarea,html.light input[type=range]{background:var(--panel);color:var(--ink)}
 
   *{box-sizing:border-box}
   html{scroll-behavior:smooth}
@@ -176,7 +181,7 @@
 
   /* large flute figure (explorer + tuner) */
   .flute-fig{display:flex;flex-direction:column;gap:8px}
-  .fbody{display:flex;align-items:center;gap:11px;flex-wrap:wrap;background:linear-gradient(180deg,#2c2114,#1b140c);border:1px solid var(--line);border-radius:40px;padding:15px 20px}
+  .fbody{display:flex;align-items:center;gap:11px;flex-wrap:wrap;background:linear-gradient(180deg,var(--panel-2),var(--panel));border:1px solid var(--line);border-radius:40px;padding:15px 20px}
   .fmouth{width:17px;height:28px;border-radius:8px;background:var(--amber-deep);opacity:.85;flex:0 0 auto}
   .fhole{width:30px;height:30px;border-radius:50%;border:2px solid var(--ink-mute);display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:.7rem;color:var(--ink-mute);flex:0 0 auto}
   .fhole.closed{background:var(--amber);border-color:var(--amber);color:#1a1208}
@@ -733,9 +738,10 @@
             </div>
             <div class="transcript" id="transcript"><span class="muted">Swaras will appear here as you play clear, steady notes…</span></div>
             <div class="lead-row" style="margin-top:12px;gap:9px">
+              <button class="btn jade sm" id="transPlay">▶ Play back</button>
               <button class="btn sm" id="transCopy">Copy</button>
               <button class="btn sm" id="transClear">Clear</button>
-              <button class="btn sm" id="transToNb">Send to notebook →</button>
+              <button class="btn sm" id="transToNb">→ Notebook</button>
             </div>
             <p class="note-small">Best with one clear note at a time. Background noise and harmonics can fool any single-note detector — trust your ear too.</p>
           </div>
