@@ -262,6 +262,29 @@
     .scrim.show{display:block}
     .wrap{padding-top:34px}
   }
+  /* lesson stepper */
+  .lesson-wrap{display:flex;flex-direction:column;gap:16px}
+  .lesson-dots{display:flex;gap:8px;justify-content:center}
+  .ldot{width:10px;height:10px;border-radius:50%;border:2px solid var(--line);background:transparent;cursor:pointer;padding:0;transition:background .18s,border-color .18s,transform .14s}
+  .ldot.active{background:var(--amber);border-color:var(--amber);transform:scale(1.3)}
+  .ldot:hover{border-color:var(--amber-deep)}
+  .lesson-cards{position:relative;overflow:hidden;min-height:260px}
+  .lesson-card{display:none;animation:rise .35s ease both}
+  .lesson-card.active{display:block}
+  .lcard-inner{display:grid;grid-template-columns:1fr 1fr;gap:20px;background:linear-gradient(180deg,var(--panel),var(--bg-2));border:1px solid var(--line);border-radius:var(--rad);padding:24px}
+  @media(max-width:700px){.lcard-inner{grid-template-columns:1fr}}
+  .lcard-art{display:flex;align-items:center;justify-content:center;background:var(--bg);border-radius:var(--rad-sm);border:1px solid var(--line-soft);padding:12px;min-height:140px}
+  .lcard-art svg{width:100%;height:auto;max-height:160px}
+  .lcard-num{font-family:var(--mono);font-size:.7rem;letter-spacing:.2em;color:var(--amber);margin-bottom:6px}
+  .lcard-text h3{font-size:1.2rem;margin-bottom:10px}
+  .lcard-text p{color:var(--ink-dim);margin:0 0 .6rem;font-size:.95rem}
+  .lcard-tip{font-family:var(--mono);font-size:.78rem;color:var(--jade);background:rgba(52,211,153,.08);border:1px solid rgba(52,211,153,.2);border-radius:8px;padding:7px 11px;margin-top:10px}
+  .lesson-nav{display:flex;align-items:center;justify-content:space-between;gap:12px}
+  .lesson-progress{font-family:var(--mono);font-size:.8rem;color:var(--ink-mute)}
+  details summary::-webkit-details-marker{display:none}
+  @keyframes breath-pulse{0%,100%{opacity:.25;transform:scale(1)}50%{opacity:.5;transform:scale(1.15)}}
+  .breath-anim{animation:breath-pulse 3s ease-in-out infinite;transform-origin:center}
+
   /* theme toggle button */
   .theme-btn{font-family:var(--body);font-size:.78rem;font-weight:600;color:var(--ink-mute);background:var(--panel);border:1px solid var(--line);border-radius:20px;padding:5px 12px;cursor:pointer;transition:color .15s,border-color .15s;width:100%;margin-bottom:8px;text-align:left;white-space:nowrap}
   .theme-btn:hover{color:var(--ink);border-color:var(--amber-deep)}
@@ -390,61 +413,214 @@
       <!-- ============ BASICS ============ -->
       <section class="view" id="view-basics" data-view="basics">
         <p class="eyebrow">01 · Flute basics</p>
-        <h1 class="title">Holding breath, holding bamboo.</h1>
-        <p class="lede">Before notes, the body. A flute rewards a relaxed posture, a steady breath, and a soft, aimed stream of air across the blowing hole.</p>
+        <h1 class="title">Five steps to your first clear note.</h1>
+        <p class="lede">Tap each step to learn it. No theory yet — just body, breath, and bamboo.</p>
 
-        <div class="grid g2 block">
-          <div class="card">
-            <h3>Parts of the flute</h3>
-            <dl class="kv">
-              <dt>Blowing hole</dt><dd>The hole near the closed (cork) end you blow across — not into.</dd>
-              <dt>Finger holes</dt><dd>6 on a typical bansuri, often 7–8 on a Carnatic venu.</dd>
-              <dt>Closed end</dt><dd>Stopped just past the blowing hole; sets the air column's start.</dd>
-              <dt>Open end</dt><dd>The far end the air column "ends" at when all holes are shut.</dd>
-            </dl>
+        <!-- Step-through lesson -->
+        <div class="lesson-wrap block">
+          <!-- step dots -->
+          <div class="lesson-dots" id="lessonDots">
+            <button class="ldot active" data-step="0" aria-label="Step 1"></button>
+            <button class="ldot" data-step="1" aria-label="Step 2"></button>
+            <button class="ldot" data-step="2" aria-label="Step 3"></button>
+            <button class="ldot" data-step="3" aria-label="Step 4"></button>
+            <button class="ldot" data-step="4" aria-label="Step 5"></button>
           </div>
-          <div class="card">
-            <h3>The first sound</h3>
-            <ul class="clean">
-              <li>Rest the blowing hole on your lower lip, hole facing up.</li>
-              <li>Make a small "pooh" shape with your lips; aim a thin stream of air across the far edge of the hole.</li>
-              <li>Roll the flute slightly in/out to find the angle where the tone "locks in."</li>
-              <li>Start with all finger holes open — chase a clear tone before chasing notes.</li>
-            </ul>
-          </div>
-        </div>
 
-        <div class="block">
-          <h3>Carnatic venu vs. Hindustani bansuri</h3>
-          <div class="scroll-x card">
+          <!-- step cards -->
+          <div class="lesson-cards" id="lessonCards">
+
+            <!-- Step 0: Parts of the flute -->
+            <div class="lesson-card active" data-step="0">
+              <div class="lcard-inner">
+                <div class="lcard-art">
+                  <svg viewBox="0 0 320 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <!-- flute body -->
+                    <rect x="10" y="48" width="300" height="24" rx="12" fill="var(--panel-2)" stroke="var(--line)" stroke-width="1.5"/>
+                    <!-- blow hole -->
+                    <ellipse cx="44" cy="60" rx="7" ry="5" fill="var(--amber)" opacity=".9"/>
+                    <!-- finger holes -->
+                    <circle cx="130" cy="60" r="5" fill="var(--panel)" stroke="var(--ink-mute)" stroke-width="1.5"/>
+                    <circle cx="155" cy="60" r="5" fill="var(--panel)" stroke="var(--ink-mute)" stroke-width="1.5"/>
+                    <circle cx="180" cy="60" r="5" fill="var(--panel)" stroke="var(--ink-mute)" stroke-width="1.5"/>
+                    <circle cx="205" cy="60" r="5" fill="var(--panel)" stroke="var(--ink-mute)" stroke-width="1.5"/>
+                    <circle cx="230" cy="60" r="5" fill="var(--panel)" stroke="var(--ink-mute)" stroke-width="1.5"/>
+                    <circle cx="255" cy="60" r="5" fill="var(--panel)" stroke="var(--ink-mute)" stroke-width="1.5"/>
+                    <!-- labels -->
+                    <text x="44" y="38" text-anchor="middle" font-size="9" fill="var(--amber)" font-family="var(--mono)">BLOW HOLE</text>
+                    <line x1="44" y1="42" x2="44" y2="53" stroke="var(--amber)" stroke-width="1" opacity=".6"/>
+                    <text x="192" y="93" text-anchor="middle" font-size="9" fill="var(--ink-mute)" font-family="var(--mono)">FINGER HOLES (6)</text>
+                    <line x1="192" y1="89" x2="192" y2="67" stroke="var(--ink-mute)" stroke-width="1" opacity=".5"/>
+                    <text x="300" y="38" text-anchor="middle" font-size="9" fill="var(--jade)" font-family="var(--mono)">OPEN END</text>
+                    <line x1="300" y1="42" x2="300" y2="53" stroke="var(--jade)" stroke-width="1" opacity=".6"/>
+                  </svg>
+                </div>
+                <div class="lcard-text">
+                  <div class="lcard-num">01</div>
+                  <h3>Parts of the flute</h3>
+                  <p>The <b>blow hole</b> is near the closed end — you blow <em>across</em> it, not into it. <b>Finger holes</b> open and close to change pitch. The <b>open end</b> is where sound radiates out.</p>
+                  <div class="lcard-tip">💡 Bansuri has 6 holes · Carnatic venu has 7–8</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Step 1: Posture -->
+            <div class="lesson-card" data-step="1">
+              <div class="lcard-inner">
+                <div class="lcard-art">
+                  <svg viewBox="0 0 320 140" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <!-- figure body -->
+                    <circle cx="90" cy="32" r="18" fill="var(--panel-2)" stroke="var(--line)" stroke-width="1.5"/>
+                    <line x1="90" y1="50" x2="90" y2="100" stroke="var(--ink-dim)" stroke-width="3" stroke-linecap="round"/>
+                    <!-- arms holding flute -->
+                    <line x1="90" y1="68" x2="55" y2="78" stroke="var(--ink-dim)" stroke-width="2.5" stroke-linecap="round"/>
+                    <line x1="90" y1="68" x2="155" y2="62" stroke="var(--ink-dim)" stroke-width="2.5" stroke-linecap="round"/>
+                    <!-- legs -->
+                    <line x1="90" y1="100" x2="75" y2="135" stroke="var(--ink-dim)" stroke-width="2.5" stroke-linecap="round"/>
+                    <line x1="90" y1="100" x2="105" y2="135" stroke="var(--ink-dim)" stroke-width="2.5" stroke-linecap="round"/>
+                    <!-- flute -->
+                    <rect x="55" y="72" width="180" height="10" rx="5" fill="var(--panel-2)" stroke="var(--amber)" stroke-width="1.2"/>
+                    <!-- posture arrows -->
+                    <path d="M130 20 L130 10" stroke="var(--jade)" stroke-width="1.5" stroke-dasharray="3 2"/>
+                    <text x="140" y="15" font-size="9" fill="var(--jade)" font-family="var(--mono)">NECK LONG</text>
+                    <path d="M60 85 L40 90" stroke="var(--rose)" stroke-width="1.5" stroke-dasharray="3 2"/>
+                    <text x="5" y="105" font-size="9" fill="var(--rose)" font-family="var(--mono)">SHOULDERS</text>
+                    <text x="8" y="116" font-size="9" fill="var(--rose)" font-family="var(--mono)">DOWN</text>
+                    <!-- angle indicator -->
+                    <path d="M155 62 Q200 60 235 65" stroke="var(--amber)" stroke-width="1.2" stroke-dasharray="4 2" fill="none" opacity=".7"/>
+                    <text x="238" y="70" font-size="9" fill="var(--amber)" font-family="var(--mono)">≈ horizontal</text>
+                  </svg>
+                </div>
+                <div class="lcard-text">
+                  <div class="lcard-num">02</div>
+                  <h3>Posture</h3>
+                  <p>Sit or stand tall. Shoulders <b>down and relaxed</b>, neck <b>long</b>. Hold the flute roughly <b>horizontal</b> or angled slightly downward. Fingers curved, sealing holes with the soft pads — not fingertips.</p>
+                  <div class="lcard-tip">💡 Tension in the shoulders travels to your breath — stay loose.</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Step 2: Embouchure -->
+            <div class="lesson-card" data-step="2">
+              <div class="lcard-inner">
+                <div class="lcard-art">
+                  <svg viewBox="0 0 320 130" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <!-- lips cross-section -->
+                    <ellipse cx="100" cy="65" rx="38" ry="22" fill="var(--panel-2)" stroke="var(--line)" stroke-width="1.5"/>
+                    <path d="M70 65 Q100 55 130 65 Q100 75 70 65Z" fill="var(--rose)" opacity=".7"/>
+                    <!-- air stream -->
+                    <path d="M130 65 Q165 55 200 60" stroke="var(--jade)" stroke-width="2" stroke-dasharray="6 3" fill="none"/>
+                    <path d="M130 65 Q165 68 200 65" stroke="var(--jade)" stroke-width="1.2" stroke-dasharray="4 3" fill="none" opacity=".5"/>
+                    <!-- blow hole cross section -->
+                    <rect x="195" y="50" width="30" height="28" rx="4" fill="var(--panel)" stroke="var(--amber)" stroke-width="1.5"/>
+                    <text x="210" y="92" text-anchor="middle" font-size="9" fill="var(--amber)" font-family="var(--mono)">BLOW HOLE</text>
+                    <!-- arrow showing stream aimed at far edge -->
+                    <circle cx="225" cy="64" r="3" fill="var(--jade)" opacity=".8"/>
+                    <text x="245" y="60" font-size="9" fill="var(--jade)" font-family="var(--mono)">far edge</text>
+                    <!-- label lips -->
+                    <text x="100" y="105" text-anchor="middle" font-size="9" fill="var(--rose)" font-family="var(--mono)">lips: soft "pooh" shape</text>
+                    <!-- air stream label -->
+                    <text x="162" y="48" text-anchor="middle" font-size="9" fill="var(--jade)" font-family="var(--mono)">thin air stream</text>
+                  </svg>
+                </div>
+                <div class="lcard-text">
+                  <div class="lcard-num">03</div>
+                  <h3>Embouchure — your lips</h3>
+                  <p>Rest the blow hole on your lower lip. Make a soft <b>"pooh"</b> shape — not pursed like a kiss. Aim a <b>thin, focused stream</b> of air at the <b>far edge</b> of the hole.</p>
+                  <p style="margin-top:8px">Roll the flute slightly in or out until the tone <b>locks in and rings clear</b>.</p>
+                  <div class="lcard-tip">💡 Chase a clear tone before chasing any note.</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Step 3: Breath -->
+            <div class="lesson-card" data-step="3">
+              <div class="lcard-inner">
+                <div class="lcard-art">
+                  <svg viewBox="0 0 320 130" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <!-- torso outline -->
+                    <rect x="110" y="20" width="70" height="90" rx="18" fill="var(--panel-2)" stroke="var(--line)" stroke-width="1.5"/>
+                    <!-- belly breath indicator (animated via CSS) -->
+                    <ellipse cx="145" cy="90" rx="22" ry="12" fill="var(--jade)" opacity=".25" class="breath-anim"/>
+                    <ellipse cx="145" cy="90" rx="14" ry="8" fill="var(--jade)" opacity=".4" class="breath-anim"/>
+                    <text x="145" y="95" text-anchor="middle" font-size="9" fill="var(--jade)" font-family="var(--mono)">BELLY</text>
+                    <!-- chest x -->
+                    <ellipse cx="145" cy="52" rx="18" ry="10" fill="var(--rose)" opacity=".12"/>
+                    <line x1="133" y1="44" x2="157" y2="60" stroke="var(--rose)" stroke-width="1.5" opacity=".5"/>
+                    <line x1="157" y1="44" x2="133" y2="60" stroke="var(--rose)" stroke-width="1.5" opacity=".5"/>
+                    <text x="185" y="52" font-size="9" fill="var(--rose)" font-family="var(--mono)">not chest</text>
+                    <!-- breath wave -->
+                    <path d="M200 100 Q215 88 230 100 Q245 112 260 100 Q275 88 290 100" stroke="var(--jade)" stroke-width="1.8" fill="none" opacity=".7"/>
+                    <text x="245" y="120" text-anchor="middle" font-size="9" fill="var(--jade)" font-family="var(--mono)">steady tone</text>
+                  </svg>
+                </div>
+                <div class="lcard-text">
+                  <div class="lcard-num">04</div>
+                  <h3>Breath control</h3>
+                  <p>Breathe from the <b>belly</b>, not the chest. Feel your abdomen expand on the inhale and slowly contract as you play. This gives you a long, even, controlled stream of air.</p>
+                  <p style="margin-top:8px">Plan your phrases so you <b>inhale at natural pauses</b> — never gasp mid-phrase.</p>
+                  <div class="lcard-tip">💡 A steady belly breath = a steady tone.</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Step 4: Choosing + daily routine -->
+            <div class="lesson-card" data-step="4">
+              <div class="lcard-inner">
+                <div class="lcard-art">
+                  <svg viewBox="0 0 320 130" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <!-- three flutes of different lengths -->
+                    <rect x="20" y="40" width="90" height="12" rx="6" fill="var(--panel-2)" stroke="var(--line)" stroke-width="1.2"/>
+                    <text x="65" y="30" text-anchor="middle" font-size="9" fill="var(--ink-mute)" font-family="var(--mono)">SHORT (E/F)</text>
+                    <text x="65" y="68" text-anchor="middle" font-size="9" fill="var(--rose)" font-family="var(--mono)">shrill</text>
+
+                    <rect x="20" y="85" width="150" height="14" rx="7" fill="var(--amber)" opacity=".85" stroke="var(--amber-deep)" stroke-width="1.2"/>
+                    <text x="95" y="78" text-anchor="middle" font-size="9" fill="var(--amber)" font-family="var(--mono)">MEDIUM (G/A) ✓</text>
+                    <text x="95" y="115" text-anchor="middle" font-size="9" fill="var(--jade)" font-family="var(--mono)">warm · comfortable start</text>
+
+                    <rect x="195" y="40" width="110" height="16" rx="8" fill="var(--panel-2)" stroke="var(--line)" stroke-width="1.2"/>
+                    <text x="250" y="30" text-anchor="middle" font-size="9" fill="var(--ink-mute)" font-family="var(--mono)">LONG (B/C)</text>
+                    <text x="250" y="72" text-anchor="middle" font-size="9" fill="var(--rose)" font-family="var(--mono)">hard to cover</text>
+                  </svg>
+                </div>
+                <div class="lcard-text">
+                  <div class="lcard-num">05</div>
+                  <h3>Choosing your first flute</h3>
+                  <p>Start with a <b>medium bansuri in G or A</b> — warm tone, comfortable hole spacing, widely available. Short flutes (E, F) are shrill; long ones (B, C) strain small hands.</p>
+                  <p style="margin-top:8px"><b>Daily routine:</b> Long tones (5 min) → Sarali varisai (10 min) → one raga scale (5 min) → one thing you love (10 min).</p>
+                  <div class="lcard-tip">💡 30 minutes every day beats 3 hours on weekends.</div>
+                </div>
+              </div>
+            </div>
+
+          </div><!-- /lesson-cards -->
+
+          <!-- prev / next -->
+          <div class="lesson-nav">
+            <button class="btn sm" id="lessonPrev" disabled>← Prev</button>
+            <span class="lesson-progress" id="lessonProgress">1 / 5</span>
+            <button class="btn jade sm" id="lessonNext">Next →</button>
+          </div>
+        </div><!-- /lesson-wrap -->
+
+        <!-- Quick-ref comparison (collapsed) -->
+        <details class="card block">
+          <summary style="cursor:pointer;font-weight:600;list-style:none;display:flex;justify-content:space-between;align-items:center">
+            Carnatic venu vs. Hindustani bansuri
+            <span style="font-size:.8rem;color:var(--ink-mute)">tap to expand ▾</span>
+          </summary>
+          <div class="scroll-x" style="margin-top:14px">
             <table class="tbl">
               <thead><tr><th>&nbsp;</th><th>Carnatic (Venu / Pullanguzhal)</th><th>Hindustani (Bansuri)</th></tr></thead>
               <tbody>
-                <tr><td class="muted">Typical holes</td><td>7–8 finger holes</td><td>6 finger holes (sometimes 7)</td></tr>
-                <tr><td class="muted">Feel</td><td>Faster, ornament-dense gamakas</td><td>Long breath, meend (glides)</td></tr>
-                <tr><td class="muted">Reference note</td><td>Sa fixed by the chosen venu</td><td>Sa set by the bansuri's key</td></tr>
-                <tr><td class="muted">Note names</td><td>Sa Ri Ga Ma Pa Da Ni</td><td>Sa Re Ga Ma Pa Dha Ni</td></tr>
+                <tr><td class="muted">Holes</td><td>7–8 finger holes</td><td>6 finger holes</td></tr>
+                <tr><td class="muted">Style</td><td>Fast gamakas, ornament-dense</td><td>Long meend (glides), breath-led</td></tr>
+                <tr><td class="muted">Sa</td><td>Fixed by the venu you choose</td><td>Fixed by the bansuri's key</td></tr>
+                <tr><td class="muted">Names</td><td>Sa Ri Ga Ma Pa Da Ni</td><td>Sa Re Ga Ma Pa Dha Ni</td></tr>
               </tbody>
             </table>
           </div>
-          <p class="note-small">The instrument is the same family — the difference is mostly in repertoire, ornamentation, and how Sa is fixed.</p>
-        </div>
-
-        <div class="grid g3 block">
-          <div class="card"><h3 style="font-size:1.05rem">Breath</h3><p class="muted" style="margin:0">Breathe from the belly, not the chest. A note ends where breath ends — plan phrases so you're not gasping mid-line.</p></div>
-          <div class="card"><h3 style="font-size:1.05rem">Posture</h3><p class="muted" style="margin:0">Shoulders down, neck long, flute roughly horizontal or angled slightly down. Fingers curved, pads (not tips) sealing the holes.</p></div>
-          <div class="card"><h3 style="font-size:1.05rem">Choosing your first</h3><p class="muted" style="margin:0">A medium bansuri in <b>G</b> or <b>A</b> is a common, comfortable start. Smaller flutes (E, F) are easy to cover but shrill; long ones strain new hands.</p></div>
-        </div>
-
-        <div class="card block">
-          <h3>A simple daily routine</h3>
-          <ul class="clean">
-            <li><b>Long tones (5 min)</b> — hold each open-hole note steady; listen for a beat-free, even tone.</li>
-            <li><b>Sarali varisai (10 min)</b> — the foundational ascending/descending patterns (see Songs &amp; practice).</li>
-            <li><b>One raga's scale (5 min)</b> — slow, in tune, then a little faster.</li>
-            <li><b>Play something you love (10 min)</b> — use the tuner to check the notes you're unsure of.</li>
-          </ul>
-        </div>
+        </details>
       </section>
 
       <!-- ============ SOUND & WAVES ============ -->

@@ -1014,6 +1014,25 @@ function init(){
   $('#scrim').addEventListener('click', closeMenu);
   $$('#nav a').forEach(a => a.addEventListener('click', closeMenu));
 
+  // lesson stepper (basics page)
+  let lessonStep = 0;
+  const totalSteps = 5;
+  function goToStep(n){
+    lessonStep = Math.max(0, Math.min(totalSteps - 1, n));
+    $$('#lessonCards .lesson-card').forEach((c,i) => c.classList.toggle('active', i === lessonStep));
+    $$('#lessonDots .ldot').forEach((d,i) => d.classList.toggle('active', i === lessonStep));
+    $('#lessonProgress').textContent = `${lessonStep + 1} / ${totalSteps}`;
+    $('#lessonPrev').disabled = lessonStep === 0;
+    $('#lessonNext').textContent = lessonStep === totalSteps - 1 ? '→ Start playing' : 'Next →';
+    if(lessonStep === totalSteps - 1) $('#lessonNext').onclick = () => { location.hash = '#notation'; };
+    else $('#lessonNext').onclick = () => goToStep(lessonStep + 1);
+  }
+  if($('#lessonNext')){
+    $('#lessonNext').addEventListener('click', () => goToStep(lessonStep + 1));
+    $('#lessonPrev').addEventListener('click', () => goToStep(lessonStep - 1));
+    $$('#lessonDots .ldot').forEach(d => d.addEventListener('click', () => goToStep(+d.dataset.step)));
+  }
+
   // animations
   heroAnim(); pipeAnim();
   window.addEventListener('resize', () => {});
